@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>语言诊断师 · 语义崩坏村</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<script>
+  // ===== 最强制重置逻辑：每次打开网页清空存档并重载一次 =====
+  (function() {
+    var PREFIX = "village_v10_";
+    var resetKey = PREFIX + "auto_reset_v3";
+    if (sessionStorage.getItem(resetKey) !== "1") {
+      sessionStorage.setItem(resetKey, "1");
+      Object.keys(localStorage).forEach(function(k) {
+        if (k.indexOf("village_v") === 0) localStorage.removeItem(k);
+      });
+      window.location.reload();
+    }
+  })();
+</script>
+<style>
+  :root{
+    --bg:#14120e; --panel:#1e1b15; --ink:#d8cfc0; --dim:#7a7268;
+    --gold:#c9a227; --line:#332e25; --red:#a84a3a; --green:#6a8a5a;
+    --paper:#e8dcc0; --p-ink:#3a2f1f; --blue:#6a8a9a;
+    --serif:"Palatino Linotype","Palatino","Georgia","Noto Serif SC","Songti SC",serif;
+    --press:"Georgia","Palatino Linotype","Noto Serif SC","Songti SC",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--serif);height:100vh;overflow:hidden;}
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:radial-gradient(rgba(201,162,39,.035) 1px,transparent 1px);
+    background-size:3px 3px;opacity:.7;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:9998;
+    background-image:
+      radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.12'/%3E%3C/svg%3E");
+    background-size: 100% 100%, 120px 120px, 200px 200px;
+    background-blend-mode: normal, multiply, multiply;
+    opacity:.55;
+    mix-blend-mode: multiply;
+  }
+  #app{width:100vw;height:100vh;display:flex;position:relative;z-index:1;}
+  #left{width:26%;height:100%;background:#1a1712;border-right:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0;}
+  #leftHead{padding:13px 18px;border-bottom:1px solid var(--line);font-size:14px;color:var(--gold);letter-spacing:3px;flex-shrink:0;}
+  #leftHead small{display:block;color:var(--dim);font-size:10.5px;letter-spacing:1px;margin-top:4px;}
+  #notesWrap{flex:1;overflow-y:auto;padding:12px 14px 30px;}
+  .empty-hint{color:var(--dim);font-size:12px;font-style:italic;line-height:1.8;}
+  .ev-block{margin-bottom:16px;}
+  .evcard{border:1px solid var(--line);padding:10px 12px;font-size:12.5px;line-height:1.6;background:linear-gradient(160deg,#24201a,#1a1712);border-radius:2px;position:relative;}
+  .evcard .en{color:var(--gold);font-size:10.5px;letter-spacing:1px;margin-bottom:5px;padding-right:44px;}
+  .evcard .badge{position:absolute;top:9px;right:9px;font-size:9px;padding:2px 6px;border:1px solid var(--line);color:var(--dim);border-radius:2px;letter-spacing:1px;}
+  .evcard .badge.object{color:#8aa4b8;border-color:#3a4a52;}
+  .evcard .badge.damage{color:#c98a3a;border-color:#52402a;}
+  .evcard .badge.action{color:var(--green);border-color:#3a4a32;}
+  .evcard .badge.dialog{color:#b8a08a;border-color:#4a3e32;}
+  .evcard .summary{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line);color:var(--dim);font-size:11px;font-style:italic;line-height:1.6;}
+  .margin-note{background:var(--paper);color:var(--p-ink);padding:12px 14px;margin:7px 0 0 8px;transform:rotate(-.5deg);position:relative;font-size:12px;line-height:1.7;box-shadow:0 3px 14px rgba(0,0,0,.45);border-radius:1px;}
+  .margin-note::before{content:"";position:absolute;top:-6px;left:22px;width:44px;height:12px;background:rgba(180,170,150,.55);transform:rotate(-3deg);}
+  .margin-note .nt{font-size:12px;color:#5a4a2f;font-weight:bold;margin-bottom:6px;}
+  .margin-note .q{font-size:11px;color:#2a2015;line-height:1.75;}
+  .margin-note .c{font-size:9.5px;color:#7a6a50;margin-top:6px;text-align:right;font-style:italic;}
+  .margin-note .strike{position:absolute;top:4px;right:7px;background:transparent;border:none;color:#a84a3a;cursor:pointer;font-size:10px;font-family:var(--serif);opacity:.55;}
+  #mid{flex:1;height:100%;position:relative;overflow:hidden;background:radial-gradient(ellipse at 45% 50%,#2a251c 0%,#14120e 78%);display:flex;flex-direction:column;}
+  #diagBar{display:none;flex-shrink:0;background:rgba(20,18,14,.98);border-bottom:1px solid var(--gold);padding:12px 18px 20px;max-height:56vh;overflow-y:auto;}
+  #diagBar.open{display:block;}
+  #diagBar .dt{color:var(--gold);font-size:13px;letter-spacing:2px;margin-bottom:8px;}
+  #diagBar .scroll-hint{color:#b8a88a;font-size:13px;text-align:center;margin-bottom:12px;text-decoration:underline;text-underline-offset:3px;}
+  .qBlock{margin-bottom:16px;}
+  .qTitle{font-size:13px;color:var(--ink);margin-bottom:7px;line-height:1.6;font-weight:bold;}
+  .qOpt{display:block;width:100%;text-align:left;background:transparent;border:1px solid var(--line);color:var(--dim);font-family:var(--serif);font-size:12.5px;padding:8px 10px;cursor:pointer;margin-bottom:6px;border-radius:2px;line-height:1.6;}
+  .qOpt:hover{border-color:var(--gold);color:var(--ink);}
+  .qOpt.sel{border-color:var(--gold);background:rgba(201,162,39,.10);color:var(--gold);}
+  #diagBtns{display:flex;gap:8px;margin-top:6px;}
+  #diagBtns button{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:6px 16px;cursor:pointer;font-family:var(--serif);font-size:12px;}
+  #diagBtns button.plain{border-color:var(--line);color:var(--dim);}
+  #sceneWrap{flex:1;position:relative;display:flex;align-items:center;justify-content:center;}
+  #sceneSvg{width:94%;height:88%;}
+  #sceneSvg .hot{cursor:pointer;}
+  #sceneSvg .hotshape{fill:transparent;stroke:transparent;stroke-width:1.2;transition:.3s;}
+  #sceneSvg .hot:hover .hotshape{fill:rgba(201,162,39,.10);stroke:var(--gold);}
+  #sceneSvg .hot.seen .hotshape{stroke:rgba(201,162,39,.8);fill:rgba(201,162,39,.15);stroke-width:1.5;}
+  #sceneSvg .hot.seen .hot-label{fill:var(--gold);}
+  #sceneSvg .hot-label{fill:#8a8175;font-size:9px;font-family:var(--serif);letter-spacing:1px;pointer-events:none;transition:.2s;}
+  #sceneSvg .hot:hover .hot-label{fill:var(--gold);}
+  #inkStab{position:absolute;left:22px;bottom:18px;width:200px;z-index:5;}
+  #inkStab .label{font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:5px;}
+  #inkLine{height:1px;position:relative;}
+  #right{width:30%;height:100%;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;flex-shrink:0;}
+  #hud{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);font-size:11px;color:var(--dim);flex-shrink:0;letter-spacing:1px;}
+  #hud .trust{color:var(--gold);}
+  #hud .btns{display:flex;gap:6px;}
+  .hud-btn{background:transparent;border:1px solid var(--line);color:var(--dim);font-family:var(--serif);font-size:10.5px;padding:3px 9px;cursor:pointer;border-radius:2px;}
+  .hud-btn:hover{border-color:var(--gold);color:var(--gold);}
+  .hud-btn:disabled{opacity:.3;cursor:not-allowed;}
+  #text{flex:1 1 auto;min-height:100px;overflow-y:auto;padding:14px 16px 8px;font-size:14px;line-height:1.9;letter-spacing:.3px;cursor:pointer;}
+  #text::-webkit-scrollbar{width:5px;}
+  #text::-webkit-scrollbar-thumb{background:var(--line);}
+  .line{margin-bottom:10px;animation:fadeIn .35s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:none;}}
+  .narr{color:var(--dim);font-style:italic;font-size:13px;}
+  .speaker{color:var(--gold);font-weight:bold;margin-right:5px;letter-spacing:1px;}
+  .you{color:var(--blue);}
+  .pain{color:var(--gold);position:relative;display:inline-block;}
+  .seg-divider{height:1px;margin:14px 0 12px;background:linear-gradient(90deg,transparent,var(--line) 20%,var(--line) 80%,transparent);position:relative;}
+  .seg-divider::after{content:"·";position:absolute;left:50%;top:-9px;transform:translateX(-50%);color:var(--dim);background:var(--panel);padding:0 6px;font-size:11px;}
+  .undo-mark{color:var(--red);font-size:10px;letter-spacing:2px;margin:10px 0;text-align:center;opacity:.6;font-style:italic;}
+  .echo-line{color:#8a7a5a;font-style:italic;font-size:12.5px;border-left:2px solid rgba(201,162,39,.35);padding:6px 10px;margin:8px 0;background:rgba(201,162,39,.04);}
+  #choices{padding:0 16px 10px;display:flex;flex-direction:column;gap:6px;flex-shrink:0;min-height:80px;max-height:46vh;overflow-y:auto;}
+  button.choice{text-align:left;background:transparent;border:1px solid var(--line);color:var(--ink);font-family:var(--serif);font-size:13px;padding:9px 12px;cursor:pointer;border-radius:2px;line-height:1.55;transition:.2s;}
+  button.choice:hover{background:rgba(201,162,39,.07);border-color:var(--gold);padding-left:16px;}
+  button.choice.special{border-color:rgba(201,162,39,.5);color:var(--gold);}
+  button.choice:disabled{opacity:.3;cursor:not-allowed;}
+  #diagBtnWrap{padding:8px 16px 12px;border-top:1px solid var(--line);flex-shrink:0;}
+  #diagBtn{width:100%;background:transparent;border:1px solid var(--line);color:var(--dim);padding:10px;cursor:not-allowed;font-family:var(--serif);font-size:12.5px;letter-spacing:3px;}
+  #diagBtn.ready{border-color:var(--gold);color:var(--gold);cursor:pointer;box-shadow:0 0 12px rgba(201,162,39,.12);}
+  #diagHint{color:#e0b84a;font-size:13px;text-align:center;margin-top:6px;opacity:0;transition:opacity .5s;text-decoration:underline;text-underline-offset:3px;}
+  #diagHint.show{opacity:1;}
+  .overlay{position:fixed;inset:0;background:rgba(10,9,7,.97);z-index:70;display:none;overflow-y:auto;}
+  .overlay.show{display:flex;}
+  .overlay-inner{margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;min-height:100%;width:100%;max-width:1100px;text-align:center;}
+  #intro{background:radial-gradient(ellipse at 50% 40%,#1a1610,#0a0907 80%);}
+  .intro-inner{max-width:700px;text-align:left;position:relative;}
+  .intro-paper{background:linear-gradient(160deg,#f2e8d0,#e6d7b6);color:#2a2015;padding:44px 50px 38px;box-shadow:0 10px 40px rgba(0,0,0,.6), inset 0 0 0 1px rgba(90,74,47,.15);border-radius:2px;position:relative;min-height:420px;}
+  .intro-paper::before{content:"";position:absolute;inset:12px;border:1px solid rgba(90,74,47,.25);pointer-events:none;}
+  .intro-paper::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(90,74,47,.08) 1px,transparent 1px);background-size:4px 4px;opacity:.5;}
+  .intro-text{position:relative;z-index:1;font-family:var(--press);font-size:16px;line-height:2.15;letter-spacing:.4px;}
+  .intro-text p{margin-bottom:16px;}
+  .intro-text .em{color:#8a3a2a;font-weight:bold;letter-spacing:2px;}
+  .intro-text .dropcap{font-size:17px;letter-spacing:3px;color:#8a3a2a;font-weight:bold;margin-bottom:22px;}
+  .intro-text .dropcap::first-letter{float:left;font-size:44px;line-height:.9;padding:4px 10px 0 0;color:#8a3a2a;font-weight:bold;}
+  .intro-text .small{font-size:12.5px;color:#6a5a40;font-style:italic;letter-spacing:1px;}
+  .intro-text .quote{border-left:2px solid rgba(90,74,47,.4);padding-left:14px;color:#4a3a20;font-style:italic;}
+  .intro-hint{position:absolute;bottom:-34px;left:0;right:0;text-align:center;color:#8a3a2a;font-size:14px;letter-spacing:2px;font-style:italic;opacity:.95;text-decoration:underline;text-underline-offset:4px;}
+  .intro-btns{text-align:center;margin-top:26px;min-height:44px;}
+  .intro-btns button{background:transparent;border:1px solid #8a3a2a;color:#8a3a2a;padding:11px 34px;cursor:pointer;font-family:var(--serif);font-size:14px;letter-spacing:4px;transition:.2s;}
+  .intro-btns button:hover{background:rgba(138,58,42,.08);letter-spacing:6px;}
+  #menu .title{font-family:var(--press);font-size:34px;color:var(--gold);letter-spacing:12px;margin-bottom:12px;font-weight:normal;text-shadow:0 1px 0 rgba(0,0,0,.6),0 0 18px rgba(201,162,39,.12);}
+  #menu .subtitle{color:var(--dim);font-size:14px;letter-spacing:3px;margin-bottom:40px;}
+  #chapterMap{display:flex;flex-direction:column;gap:10px;width:100%;max-width:640px;margin-bottom:24px;}
+  .chapter-row{display:flex;align-items:center;gap:12px;border:1px solid var(--line);padding:13px 18px;background:rgba(30,27,21,.6);transition:.2s;}
+  .chapter-row.unlocked{border-color:rgba(201,162,39,.5);}
+  .chapter-row.locked{opacity:.55;}
+  .chapter-row.cleared{border-color:var(--gold);background:rgba(201,162,39,.05);}
+  .chapter-row.final{border-color:#52302a;background:rgba(42,28,22,.7);}
+  .chapter-row.final.unlocked{border-color:#c98a3a;}
+  .chapter-row.final.cleared{border-color:var(--red);box-shadow:0 0 18px rgba(168,74,58,.15);}
+  .chapter-row:hover{background:rgba(201,162,39,.05);}
+  .chapter-row .ch-idx{color:var(--gold);font-size:18px;width:32px;text-align:center;letter-spacing:1px;}
+  .chapter-row.final .ch-idx{color:#c98a3a;}
+  .chapter-row.locked .ch-idx{color:var(--dim);}
+  .chapter-row .ch-body{flex:1;text-align:left;}
+  .chapter-row .ch-title{font-size:16px;letter-spacing:3px;margin-bottom:3px;}
+  .chapter-row.cleared .ch-title{color:var(--gold);}
+  .chapter-row.final .ch-title{color:#d88c3c;}
+  .chapter-row.final.cleared .ch-title{color:var(--red);}
+  .chapter-row .ch-sub{font-size:11.5px;color:var(--dim);font-style:italic;letter-spacing:1px;}
+  .chapter-row .ch-meta{font-size:11px;color:#8a7a6a;text-align:right;line-height:1.6;}
+  .chapter-row .ch-meta .inherit{color:var(--gold);}
+  .chapter-row .ch-btn{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:7px 18px;cursor:pointer;font-family:var(--serif);font-size:12px;letter-spacing:2px;transition:.2s;}
+  .chapter-row.final .ch-btn{border-color:#c98a3a;color:#c98a3a;}
+  .chapter-row .ch-btn:hover{background:rgba(201,162,39,.12);}
+  .chapter-row .ch-btn:disabled{border-color:var(--line);color:var(--dim);cursor:not-allowed;}
+  #menu .global-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  #menu .global-btns button{background:transparent;border:1px solid var(--line);color:var(--ink);padding:9px 22px;cursor:pointer;font-family:var(--serif);font-size:13px;letter-spacing:2px;transition:.2s;}
+  #menu .global-btns button:hover{border-color:var(--gold);color:var(--gold);}
+  #menu .global-btns button.babel-btn{border-color:#52302a;color:#c98a3a;}
+  #menu .global-btns button.danger{border-color:#52302a;color:#a84a3a;font-size:12px;}
+  #settle .stitle{font-size:13px;color:var(--dim);letter-spacing:6px;margin-bottom:14px;}
+  #settle .eName{font-family:var(--press);font-size:28px;color:var(--gold);letter-spacing:6px;margin-bottom:24px;text-shadow:0 1px 0 rgba(0,0,0,.6),0 0 18px rgba(201,162,39,.12);}
+  #settle.final .eName{color:#d88c3c;}
+  #settle .edesc{color:var(--dim);font-size:15px;line-height:2.1;max-width:640px;margin-bottom:18px;}
+  #settle .eafter{color:var(--ink);font-size:13.5px;line-height:2.1;max-width:640px;margin-bottom:22px;padding:16px 20px;border-left:2px solid var(--gold);background:rgba(201,162,39,.04);font-style:italic;text-align:left;}
+  #settle.final .eafter{border-left-color:#c98a3a;background:rgba(201,122,58,.04);}
+  #settle .stats{display:flex;gap:32px;margin-bottom:22px;flex-wrap:wrap;justify-content:center;}
+  #settle .statItem{display:flex;flex-direction:column;align-items:center;}
+  #settle .statVal{font-size:24px;color:var(--gold);margin-bottom:6px;}
+  #settle .statLabel{font-size:11px;color:var(--dim);letter-spacing:2px;}
+  #settle .lock-note{color:#c98a3a;font-size:12.5px;line-height:1.8;margin:6px 0 22px;font-style:italic;max-width:580px;}
+  #settle .progDots{display:flex;gap:8px;margin-bottom:10px;justify-content:center;}
+  #settle .dot{width:14px;height:14px;border:1px solid var(--line);border-radius:50%;}
+  #settle .dot.on{background:var(--gold);border-color:var(--gold);}
+  #settle .btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  #settle button{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:10px 24px;cursor:pointer;font-family:var(--serif);font-size:13px;letter-spacing:2px;}
+  #settle button.plain{border-color:var(--line);color:var(--dim);}
+  #settle button.babel-continue{border-color:#c98a3a;color:#c98a3a;}
+  #collection h1,#notesGallery h1{font-family:var(--press);color:var(--gold);font-size:26px;letter-spacing:8px;margin-bottom:8px;font-weight:normal;text-shadow:0 1px 0 rgba(0,0,0,.6),0 0 18px rgba(201,162,39,.12);}
+  .gallery-sub{color:var(--dim);font-size:12px;text-align:center;margin-bottom:22px;letter-spacing:2px;}
+  .tab-bar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:22px;}
+  .tab-btn{background:transparent;border:1px solid var(--line);color:var(--dim);padding:7px 16px;cursor:pointer;font-family:var(--serif);font-size:12.5px;letter-spacing:1px;}
+  .tab-btn:hover{border-color:var(--gold);color:var(--ink);}
+  .tab-btn.active{border-color:var(--gold);color:var(--gold);background:rgba(201,162,39,.08);}
+  .tab-btn.final.active{border-color:#c98a3a;color:#c98a3a;background:rgba(201,122,58,.08);}
+  .tab-btn .tab-prog{font-size:10.5px;color:#8a7a6a;margin-left:6px;}
+  .tab-btn.active .tab-prog{color:var(--gold);}
+  .babel-fixed{width:100%;max-width:1000px;margin-bottom:18px;}
+  .babel-card{border:1px solid #52302a;padding:16px 20px;background:linear-gradient(160deg,#2a1c16,#1a1310);text-align:left;}
+  .babel-card.unlocked{border-color:var(--red);}
+  .babel-card .bc-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .babel-card .bc-title{color:#d88c3c;font-size:17px;letter-spacing:3px;}
+  .babel-card.unlocked .bc-title{color:var(--red);}
+  .babel-card .bc-tag{font-size:10.5px;color:#8a7a6a;letter-spacing:2px;}
+  .babel-card .bc-desc{color:var(--dim);font-size:12.5px;line-height:1.8;}
+  .babel-card.unlocked .bc-desc{color:var(--ink);}
+  .babel-card .bc-philo{margin-top:10px;font-size:12px;color:#b8a88a;font-style:italic;line-height:1.8;border-left:2px solid var(--red);padding-left:10px;}
+  .babel-card .bc-philo .cite{display:block;text-align:right;font-size:10px;color:#7a6a50;margin-top:4px;}
+  #colGrid,#ngGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;}
+  .colCard{border:1px solid var(--line);padding:18px;min-height:150px;display:flex;flex-direction:column;cursor:pointer;text-align:left;transition:.2s;}
+  .colCard.unlocked{border-color:var(--gold);background:rgba(201,162,39,.04);}
+  .colCard.final.unlocked{border-color:#c98a3a;background:rgba(42,28,22,.4);}
+  .colCard.locked{border-style:dashed;}
+  .colCard:hover{border-color:var(--gold);}
+  .colCard .colTitle{font-size:15px;color:var(--dim);margin-bottom:8px;letter-spacing:2px;}
+  .colCard.unlocked .colTitle{color:var(--gold);}
+  .colCard.final.unlocked .colTitle{color:#d88c3c;}
+  .colCard .colDesc{font-size:12px;color:var(--dim);line-height:1.7;}
+  .colCard.unlocked .colDesc{color:var(--ink);}
+  .colCard .colHint{font-size:11.5px;color:#c9a227;margin-top:10px;font-style:italic;line-height:1.7;background:rgba(201,162,39,.05);padding:6px 8px;border-radius:2px;}
+  .colCard .detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);}
+  .colCard.expanded .detail{display:block;}
+  .colCard .detail .philo{font-size:11.5px;color:#b8a88a;line-height:1.75;font-style:italic;padding:8px 10px;border-left:2px solid var(--gold);background:rgba(201,162,39,.03);margin-bottom:10px;}
+  .colCard.final .detail .philo{border-left-color:#c98a3a;background:rgba(201,122,58,.03);}
+  .colCard .detail .philo .cite{display:block;text-align:right;font-size:10px;color:#7a6a50;margin-top:4px;}
+  .colCard .detail .why{font-size:12px;color:var(--ink);line-height:1.8;}
+  .colCard .detail .why::before{content:"为什么是这个结局：";color:var(--gold);font-size:11px;letter-spacing:1px;}
+  .colCard.final .detail .why::before{color:#c98a3a;}
+  .colCard .detail .after{margin-top:10px;font-size:12px;color:var(--dim);line-height:1.8;font-style:italic;padding-top:10px;border-top:1px dashed var(--line);}
+  .colCard .detail .after::before{content:"后来：";color:var(--gold);font-size:11px;letter-spacing:1px;font-style:normal;}
+  .colCard.final .detail .after::before{color:#c98a3a;}
+  .noteCard{border:1px solid var(--line);padding:16px;min-height:140px;background:var(--paper);color:var(--p-ink);text-align:left;position:relative;}
+  .noteCard.locked{background:rgba(20,18,14,.5);color:var(--dim);border-style:dashed;}
+  .noteCard.echo{background:linear-gradient(160deg,#ece0c4,#e0d2b0);border-color:#b8a06a;}
+  .noteCard.echo::after{content:"回响";position:absolute;top:8px;right:10px;font-size:9.5px;color:#8a6a30;border:1px solid #b8a06a;padding:1px 5px;}
+  .noteCard .nt-title{font-size:14px;font-weight:bold;margin-bottom:8px;color:#5a4a2f;}
+  .noteCard.locked .nt-title{color:var(--dim);}
+  .noteCard .nt-quote{font-size:12px;line-height:1.8;}
+  .noteCard .nt-cite{font-size:10px;text-align:right;margin-top:10px;font-style:italic;color:#7a6a50;}
+  .noteCard .nt-src{font-size:10px;color:#8a6a30;margin-top:6px;font-style:italic;}
+  .filter-row{display:flex;justify-content:flex-end;margin-bottom:12px;width:100%;}
+  .filter-toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--dim);user-select:none;}
+  .filter-toggle input{display:none;}
+  .filter-toggle .sw{width:34px;height:18px;border:1px solid var(--line);border-radius:10px;position:relative;background:#1a1712;}
+  .filter-toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--dim);transition:.2s;}
+  .filter-toggle input:checked + .sw{border-color:var(--gold);background:rgba(201,162,39,.12);}
+  .filter-toggle input:checked + .sw::after{left:18px;background:var(--gold);}
+  #colFooter,#ngFooter{text-align:center;margin-top:24px;width:100%;}
+  #colFooter p,#ngFooter p{color:var(--dim);font-size:12.5px;line-height:1.9;}
+  #colFooter .encourage,#ngFooter .encourage{color:var(--gold);font-size:13px;margin-top:12px;}
+  #colFooter button,#ngFooter button{margin-top:18px;background:transparent;border:1px solid var(--gold);color:var(--gold);padding:9px 26px;cursor:pointer;font-family:var(--serif);font-size:13px;margin-right:10px;letter-spacing:2px;}
+  .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#15130f;border:1px solid var(--gold);color:#e8c85a;padding:8px 18px;font-size:13px;z-index:10000;opacity:0;transition:opacity .3s;pointer-events:none;letter-spacing:1px;text-decoration:underline;text-underline-offset:3px;}
+  .toast.show{opacity:1;}
+  .stat-change{font-size:11px;margin-left:8px;font-style:normal;}
+  .give-warn{color:#e0a84a;font-size:14px;line-height:1.9;text-align:center;font-style:italic;margin:10px 0 4px;text-decoration:underline;text-underline-offset:4px;}
+  
+  @keyframes babelShake{
+    0%{transform:translate(0,0) rotate(0);}
+    20%{transform:translate(-4px,2px) rotate(-.3deg);}
+    40%{transform:translate(5px,-3px) rotate(.4deg);}
+    60%{transform:translate(-3px,-2px) rotate(-.2deg);}
+    80%{transform:translate(4px,3px) rotate(.3deg);}
+    100%{transform:translate(0,0) rotate(0);}
+  }
+  body.babel-mode{background:#2a0e0a !important;}
+  body.babel-mode #app{animation:babelShake .35s infinite;}
+  body.babel-mode #settle{background:rgba(60,10,6,.96) !important;}
+  body.babel-mode #settle .eName,
+  body.babel-mode #settle .edesc,
+  body.babel-mode #settle .eafter,
+  body.babel-mode #settle .lock-note{color:#ff7a5a !important;text-shadow:0 0 8px rgba(255,60,30,.5);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="left"><div id="leftHead">笔 记 本<small>证据 · 概括 · 边注</small></div><div id="notesWrap"></div></div>
+  <div id="mid">
+    <div id="diagBar"><div class="dt">诊 断</div><div class="scroll-hint">↓ 请向下滑动查看完整题目 ↓</div><div id="diagQs"></div><div id="diagBtns"><button onclick="submitDiagnosis()">提交诊断</button><button class="plain" onclick="closeDiag()">取消</button></div></div>
+    <div id="sceneWrap"><svg id="sceneSvg" viewBox="0 0 400 300"></svg><div id="inkStab"><div class="label">语 义 稳 定 度</div><div id="inkLine"></div></div></div>
+  </div>
+  <div id="right">
+    <div id="hud"><span>信任 <span class="trust" id="trustVal">0</span> · 稳定度 <span id="stabVal">50</span></span><div class="btns"><button id="undoBtn" class="hud-btn" onclick="undo()" disabled>↶ 回退</button><button class="hud-btn" onclick="goMainMenu()">主菜单</button></div></div>
+    <div id="text"></div><div id="choices"></div>
+    <div id="diagBtnWrap"><button id="diagBtn" onclick="openDiag()">诊断（证据不足）</button><div id="diagHint"></div></div>
+  </div>
+</div>
+<div id="intro" class="overlay show">
+  <div class="overlay-inner intro-inner">
+    <div class="intro-paper">
+      <div class="intro-text" id="introText"></div>
+      <div class="intro-hint" id="introHint">点击任意处继续</div>
+    </div>
+    <div class="intro-btns" id="introBtns"></div>
+  </div>
+</div>
+<div id="menu" class="overlay">
+  <div class="overlay-inner">
+    <div class="title">语言诊断师</div>
+    <div class="subtitle">语义崩坏村 · 四段诊断与一个终局</div>
+    <div id="chapterMap"></div>
+    <div class="global-btns">
+      <button onclick="showCollection(null)">思想画廊</button>
+      <button onclick="showNotes(null)">边注图鉴</button>
+      <button class="babel-btn" onclick="showBabel()">巴别塔</button>
+      <button class="danger" onclick="resetData()">重置所有记录</button>
+    </div>
+  </div>
+</div>
+<div id="settle" class="overlay"><div class="overlay-inner" id="settleContent"></div></div>
+<div id="collection" class="overlay"><div class="overlay-inner"><h1>思 想 画 廊</h1><div class="gallery-sub">按章查看 · 点击卡片展开</div><div class="babel-fixed" id="babelCol"></div><div class="tab-bar" id="colTabs"></div><div id="colGrid"></div><div id="colFooter"></div></div></div>
+<div id="notesGallery" class="overlay"><div class="overlay-inner"><h1>边 注 图 鉴</h1><div class="gallery-sub">按章查看 · 回响以不同底色标记</div><div class="babel-fixed" id="babelNg"></div><div class="tab-bar" id="ngTabs"></div><div class="filter-row"><label class="filter-toggle"><input type="checkbox" id="onlyUnlocked" onchange="showNotes(ngTab)"><span class="sw"></span><span>只看已解锁</span></label></div><div id="ngGrid"></div><div id="ngFooter"></div></div></div>
+<div class="toast" id="toast"></div>
+<script>
+"use strict";
+var PREFIX="village_v10_";
+var SCHEMA_KEY=PREFIX+"schema";
+var SCHEMA_VER="1";
+var INTRO_SEEN_KEY=PREFIX+"intro_seen";
+var ORDER=["marta","hans","jurgen","lina"];
+var FINAL="final";
+var META={
+  marta:{idx:"一",title:"玛尔塔",sub:"墙在疼",key:PREFIX+"marta_end",nk:PREFIX+"marta_notes",init:50,observe:["E02","E03","E04","E09","E05","E06"],extra:["E08","E10","E11"],who:"玛尔塔"},
+  hans:{idx:"二",title:"汉斯",sub:"确证与谎言",key:PREFIX+"hans_end",nk:PREFIX+"hans_notes",init:50,observe:["E01","E03","E04","E05","E06"],extra:["E07","E08","E10"],who:"汉斯"},
+  jurgen:{idx:"三",title:"尤尔根",sub:"规则与幽灵",key:PREFIX+"jurgen_end",nk:PREFIX+"jurgen_notes",init:50,observe:["E01","E02","E03","E04","E05","E06","E07"],extra:["E08"],who:"尤尔根"},
+  lina:{idx:"四",title:"莉娜",sub:"真的与故事圈",key:PREFIX+"lina_end",nk:PREFIX+"lina_notes",init:50,observe:["E01","E02","E03","E04","E05","E06","E07"],extra:["E08","E09","E10","E11","E12"],who:"莉娜"},
+  final:{idx:"终",title:"沉默者",sub:"不可说",key:PREFIX+"final_end",nk:PREFIX+"final_notes",init:50,observe:[],extra:[],who:"沉默者",isFinal:true}
+};
+var BABEL_KEY=PREFIX+"babel";
+var G={endings:{},notes:{},babel:false,cleared:{},stab:{},finalUnlocked:false};
+ORDER.concat([FINAL]).forEach(function(id){G.endings[id]=[];G.notes[id]=[];G.cleared[id]=false;G.stab[id]=null;});
+
+function loadG(){
+  ORDER.concat([FINAL]).forEach(function(id){
+    var m=META[id];
+    try{var e=JSON.parse(localStorage.getItem(m.key)||"[]");if(Array.isArray(e))G.endings[id]=e;}catch(e){}
+    try{var n=JSON.parse(localStorage.getItem(m.nk)||"[]");if(Array.isArray(n))G.notes[id]=n;}catch(e){}
+    G.cleared[id]=G.endings[id].indexOf("accurate")>=0;
+    var s=parseFloat(localStorage.getItem(m.key+"_stab"));G.stab[id]=isNaN(s)?null:s;
+  });
+  G.finalUnlocked=ORDER.every(function(id){return G.cleared[id];});
+  G.babel=localStorage.getItem(BABEL_KEY)==="1";
+}
+function saveE(id){try{localStorage.setItem(META[id].key,JSON.stringify(G.endings[id]));}catch(e){}}
+function saveN(id){try{localStorage.setItem(META[id].nk,JSON.stringify(G.notes[id]));}catch(e){}}
+function saveS(id,v){try{localStorage.setItem(META[id].key+"_stab",String(v));}catch(e){}G.stab[id]=v;}
+function saveB(){try{localStorage.setItem(BABEL_KEY,"1");}catch(e){}G.babel=true;}
+function unlocked(id){
+  if(id===FINAL) return G.finalUnlocked;
+  var i=ORDER.indexOf(id);
+  if(i===0)return true;
+  return G.cleared[ORDER[i-1]]===true;
+}
+function inherit(id){
+  if(id===FINAL){
+    var v=G.stab.lina;
+    if(v===null||isNaN(v))return 50;
+    return Math.max(1,Math.min(100,Math.round(v)));
+  }
+  var i=ORDER.indexOf(id);
+  if(i===0)return META.marta.init;
+  var p=ORDER[i-1];
+  var v2=G.stab[p];
+  if(v2===null||isNaN(v2))return META[id].init;
+  return Math.max(1,Math.min(100,Math.round(v2)));
+}
+
+var INTRO_SEGMENTS=[
+  {html:'你走了七天。',cls:'dropcap'},
+  {html:'第七天傍晚，路开始变窄。两边的草高过膝盖，草叶上沾着白天没干透的灰。你认得这条路——七年前你从这条路走出去，那时草还没这么高，路边的石头也没这么多。石头还是那些石头，只是你以前不觉得它们硌脚。'},
+  {html:'村口的老椴树还在。',cls:'em'},
+  {html:'椴树不是随便一棵树。它长在广场边上，长在教堂和酒馆之间。夏天开花，花蜜的味道能飘过半条街；秋天落叶，叶子扫在一起，孩子们会跳进去。七月的时候，村里人在树下跳舞，一直跳到天亮。你小时候也在那棵树下跳过。现在树底下没有人，只有一圈被踩实的土，土上落着一层灰。'},
+  {html:'你站了一会儿。风从村子里吹出来，带着一股你不熟悉的味道：不是炊烟，不是牲口，是那种很多东西同时坏掉、又没人去修的味道。你在外面闻过这种味道，在那些被水淹过、又被太阳晒了三天的镇子上。'},
+  {html:'你往里走。',cls:'em'},
+  {html:'进村的路有三个人在说话。一个说东边，一个说西边，一个说昨天。他们说了很久。说完，各自走开。没有一个人回头看另外两个。你从他们旁边经过，他们看了你一眼，又各自走各自的。你想起七年前，这个村子里的人不是这样说话的。那时候他们吵架，吵得很凶，但吵的是同一件事。吵完，晚上还坐在一起喝汤。'},
+  {html:'村子的路比你记得的窄。两边的墙比你记得的高。墙根有新裂的缝，缝里长出了草。有一堵墙上钉着一张纸，纸被雨淋过，字迹发糊，只看得清一个红印章。印章下面有人用炭笔写了两个字，写得很用力，笔画像要划破纸。'},
+  {html:'广场上有人在等你。',cls:'em'},
+  {html:'村长站在石板旁边。他比你记得的老，头发白了一半，背也有点驼。他看见你，没有惊讶，只是点了点头，像你昨天才走。他穿着一件深色的旧外套，扣子扣到最上面一颗，这在七月的傍晚是多余的。'},
+  {html:'他说，你回来得正好。'},
+  {html:'他说，村子里出了些怪事。说“怪事”两个字的时候，他把声音压得很低，像怕被谁听见。他说，词还在用，可用法彼此错开了——同一句话，两个人听着，能听出两个意思。他说，你是从外面回来的，耳朵还没被村子磨钝，兴许能听出问题出在哪儿。'},
+  {html:'他请你先去看四个人。',cls:'em'},
+  {html:'一个老妇，总说墙在疼。一个磨坊主，只肯信自己的眼睛。一个铁匠，把规矩刻在锤柄上。还有一个孩子，把“真的”当成故事的开头。',cls:'quote'},
+  {html:'说完这四个人，他停了停，像是还有话，又不知怎么开口。'},
+  {html:'他没有往下说，只是往广场中央看了一眼。你顺着他的目光看过去。广场中央立着一块石板，齐胸高，表面被雨水和风磨得发灰。石板前站着一个人，背对着你们。他不高，也不瘦。风从广场穿过，他的衣角动了一下，又垂下去。'},
+  {html:'村长说，那一位，你先不用管。'},
+  {html:'你可以在村里走动，看看那些散落的东西，也可以跟他们说话，听他们怎么用词。左边那条线，是村子的语义稳定度——你说错一句话，它就往下掉一点。掉到底，村子就再也说不出话了。右下角那个按钮，等你证据攒够，就能下诊断。诊断对了，下一个人才会开口。',cls:'small'},
+  {html:'村长说完，转身走了。他走得很慢，像怕踩坏地上的什么东西。'},
+  {html:'你站在广场上。风又吹了一下。你听见身后有人在说话，说了很久，谁也没听懂谁。'},
+  {html:'你往里走。',cls:'em'}
+];
+
+var introIdx=0;
+var introTyping=false;
+var introTimer=null;
+var introDone=false;
+function showIntro(){
+  introIdx=0;introTyping=false;introDone=false;
+  if(introTimer){clearTimeout(introTimer);introTimer=null;}
+  var t=document.getElementById("introText");
+  if(t)t.innerHTML="";
+  var b=document.getElementById("introBtns");
+  if(b)b.innerHTML="";
+  var h=document.getElementById("introHint");
+  if(h)h.style.display="";
+  document.getElementById("intro").classList.add("show");
+  document.getElementById("menu").classList.remove("show");
+  var s=document.getElementById("settle");if(s)s.classList.remove("show");
+  var c=document.getElementById("collection");if(c)c.classList.remove("show");
+  var n=document.getElementById("notesGallery");if(n)n.classList.remove("show");
+  advanceIntro();
+}
+function advanceIntro(){
+  if(introTyping)return;
+  if(introIdx>=INTRO_SEGMENTS.length){finishIntro();return;}
+  var seg=INTRO_SEGMENTS[introIdx];
+  var box=document.getElementById("introText");
+  var p=document.createElement("p");
+  if(seg.cls)p.classList.add(seg.cls);
+  box.appendChild(p);
+  var text=seg.html;
+  var i=0;
+  introTyping=true;
+  function step(){
+    if(i>=text.length){
+      p.textContent=text;
+      introTyping=false;
+      introIdx++;
+      if(introIdx>=INTRO_SEGMENTS.length)finishIntro();
+      return;
+    }
+    p.textContent=text.slice(0,i+1);
+    i++;
+    introTimer=setTimeout(step,22);
+  }
+  step();
+}
+function finishIntro(){
+  introDone=true;
+  var h=document.getElementById("introHint");
+  if(h)h.style.display="none";
+  var b=document.getElementById("introBtns");
+  if(b)b.innerHTML='<button onclick="closeIntro()">你往里走</button>';
+}
+function closeIntro(){
+  if(introTimer){clearTimeout(introTimer);introTimer=null;}
+  document.getElementById("intro").classList.remove("show");
+  try{localStorage.setItem(INTRO_SEEN_KEY,"1");}catch(e){}
+  document.getElementById("menu").classList.add("show");
+  loadG();map();
+}
+document.getElementById("intro").addEventListener("click",function(e){
+  if(e.target.closest("button"))return;
+  if(introTyping){
+    if(introTimer){clearTimeout(introTimer);introTimer=null;}
+    var ps=document.querySelectorAll("#introText p");
+    if(ps.length){
+      var last=ps[ps.length-1];
+      var seg=INTRO_SEGMENTS[introIdx];
+      if(seg){last.textContent=seg.html;}
+    }
+    introTyping=false;introIdx++;
+    if(introIdx>=INTRO_SEGMENTS.length)finishIntro();
+    return;
+  }
+  if(!introDone)advanceIntro();
+});
+
+var DATA={};
+DATA.marta={EV:{E01:{n:"墙在疼",t:"object",l:"物件",s:"“疼”用于一堵正在渗水、无人修补的墙。",x:"墙根积着一小片水。玛尔塔摸着墙上的裂缝说：“轻一点，别疼得太响。”"},E02:{n:"坏椅子",t:"object",l:"物件",s:"“疼”用于一张缺角、却仍每天撑人的椅子。",x:"缺角的木椅被她盖上布。“它疼得厉害，坐不得人了。”"},E03:{n:"玛尔塔的膝盖",t:"object",l:"反例",s:"肿着的膝盖她不说疼——因为“它有人管，也不撑重了”。",x:"膝盖肿着，却说：“不疼，只是老了。我不再挑水了，药自己上。它有人管，也不撑重了。”"},E04:{n:"旧鞋",t:"damage",l:"损伤",s:"磨穿的鞋底：损伤 + 仍在穿 + 亲手修补。",x:"她给磨破的鞋底缝线：“鞋疼，脚才走不远。”"},E05:{n:"裂口陶杯",t:"damage",l:"损伤",s:"新杯子也有裂口——排除“旧才会疼”。",x:"新陶杯边缘有裂口。她说：“新东西也会疼，只是没人认得它。”"},E06:{n:"新铁锤",t:"damage",l:"反例",s:"崭新无痕、很少使用的铁锤不疼。",x:"铁锤崭新无痕。“没用过几回，也没伤。它不疼。”"},E07:{n:"墙后的水",t:"damage",l:"损伤",s:"裂缝的成因：持续受损，且无人处理。",x:"裂缝背后有渗水，墙体持续受损，无人处理。"},E08:{n:"石灰与布",t:"action",l:"照料",s:"修补工具整齐摆放：她在照料，只是忙不过来。",x:"修补工具整齐摆在门边。她一直在照料，只是一个人忙不过来。"},E09:{n:"旧茶壶",t:"object",l:"反例",s:"四十年旧壶不疼——排除“老旧即疼”。",x:"四十年旧壶，壶身完好，擦得发亮。“它不疼。它没伤，也还在用。”"},E10:{n:"玛尔塔的反问",t:"dialog",l:"对话",s:"“疼”这个字，究竟在哪里？",x:"“你说‘疼’的时候，那个字在哪里？在你膝盖里？在脑子里？还是在那口气里？”"},E11:{n:"甲虫的假设",t:"dialog",l:"边注",s:"玛尔塔用甲虫比喻私人感受。",x:"“如果每个人盒子里装的东西都不一样呢？”"}},NOTES:{N_wall_heidegger:{t:"“用具的透明与显现”",q:"“用具在顺遂使用时是透明的；它坏了，才作为‘用具’显现出来。”<br><br>——玛尔塔的‘疼’，就是墙在坏掉时发出的信号。",c:"Heidegger, Sein und Zeit §15–16"},N_chair_witt:{t:"“语言游戏”",q:"“一个词的意义是它在语言中的用法。”<br><br>——你说“椅子不会听懂话”用的是科学的语言游戏；玛尔塔用的是照料的语言游戏。",c:"Wittgenstein, PI §43"},N_knee_merleau:{t:"“身体图式”",q:"“我不是在我的身体前面，我就在我的身体之中。”<br><br>——老去不是一种内在的疼痛，而是身体能力的衰退。",c:"Merleau-Ponty, Phénoménologie de la perception"},N_knee_heidegger:{t:"“上手状态”",q:"“用具越是顺手，我们就越是察觉不到它。”<br><br>——玛尔塔的膝盖被药膏“照料”着，所以不再“疼”。",c:"Heidegger, Sein und Zeit"},N_shoe_sartre:{t:"“自欺”",q:"“人注定是自由的，但他无时无刻不在逃避自由。”<br><br>——“舍不得扔”是一种自欺。",c:"Sartre, L'Être et le Néant"},N_shoe_levinas:{t:"“他者的面容”",q:"“面容是赤裸的，它是对我们权力的抵抗。”<br><br>——旧鞋的破损本身就是一种面容。",c:"Levinas, Totalité et Infini"},N_cup_witt:{t:"“家族相似”",q:"“不要想，而要看！”<br><br>——新杯子也会裂，新也会疼。",c:"Wittgenstein, PI §66"},N_cup_sartre:{t:"“物与占有”",q:"“占有，就是让某物成为我的一部分。”<br><br>——玛尔塔不扔杯子，是因为那个裂口让她看见了物在时间中的脆弱。",c:"Sartre, L'Être et le Néant"},N_pot_witt:{t:"“反本质主义”",q:"“如果‘甲虫’这个词在这些人的语言中还有某种用法，那么它就不是某个东西的名称。”<br><br>——旧茶壶完好无损，它不疼。",c:"Wittgenstein, PI §293"},N_pot_gadamer:{t:"“视域融合”",q:"“理解总是视域的融合。”<br><br>——你理解了玛尔塔的视域。",c:"Gadamer, Wahrheit und Methode"},N_ask_where_witt:{t:"“私人语言不可能”",q:"“如果我说我自己仅仅从自己的情况中知道‘疼痛’一词的意义是什么——那么难道我不也得这样说别人吗？”<br><br>——“疼”必须在公共用法里运作。",c:"Wittgenstein, PI §293"},N_ask_where_merleau:{t:"“知觉的优先性”",q:"“世界不是我所想的那样，而是我所经历的那样。”<br><br>——“疼”在你的膝盖里，在你身体的存在方式里。",c:"Merleau-Ponty, Phénoménologie de la perception"},N_beetle_witt1:{t:"“甲虫：用法的公共性”",q:"“盒子中的这个东西完全不属于这个语言游戏……因为盒子也可能是空的。”",c:"Wittgenstein, PI §293"},N_beetle_witt2:{t:"“甲虫：空洞的词语”",q:"“假如每个人都拥有一个盒子，里面装着只有他自己能看见的东西，那么‘甲虫’这个词就退出了语言。”",c:"Wittgenstein, PI §293"},N_wall_levinas:{t:"“裂就是它的话”",q:"“他者的‘脸’在赤裸与贫困中呈现，并发出伦理的召唤。”<br><br>——玛尔塔把‘脸’扩展到了物。",c:"Levinas, Totalité et Infini"},N_wall_witt:{t:"“语言游戏之外”",q:"“不要替别人把话说完。”<br><br>——墙不会说话，但玛尔塔的沉默不是无话可说。",c:"Wittgenstein, PI 语境精神"},N_repair_heidegger:{t:"“因缘整体性”",q:"“因缘整体性归根到底要回溯到所用之上。”<br><br>——玛尔塔的‘疼’指向的是修补的行动。",c:"Heidegger, Sein und Zeit §18"},N_repair_witt:{t:"“生活形式”",q:"“想象一种语言就意味着想象一种生活形式。”<br><br>——修墙不是技术活动，而是确认生活形式依然有效的仪式。",c:"Wittgenstein, PI §19"},N_comfort_witt:{t:"“语言的迷路”",q:"“哲学问题具有这样的形式：‘我不知道该怎么办。’”<br><br>——安慰墙之所以无用，是因为它把伦理问题降格成了心理问题。",c:"Wittgenstein, PI §123"},N_marta_piaget:{t:"“泛灵论阶段”",q:"“儿童把生命赋予一切事物。”<br><br>——这是一条误读的引用：它把玛尔塔的伦理语言读成了儿童心理。",c:"Piaget, La Représentation du monde chez l'enfant"}},QS:[{k:"obj",t:"1. 她说“疼”时，通常指向什么？",o:[{id:"obj_damage",l:"有裂缝、磨损或损伤的东西",ev:"E02, E04, E05"},{id:"obj_old",l:"一切老旧的东西",ev:"E09"},{id:"obj_alive",l:"一切有生命的东西",ev:"E02"},{id:"obj_human",l:"人，包括她自己",ev:"E03"}]},{k:"feat",t:"2. 这些对象共同具有的可见特征是什么？",o:[{id:"feat_damage",l:"可见的裂缝、磨损或损伤",ev:"E01, E04, E05"},{id:"feat_old",l:"年头久、老旧",ev:"E09"},{id:"feat_soul",l:"有感觉、有灵魂",ev:"E02"},{id:"feat_fear",l:"会害怕、会孤单",ev:"E05"}]},{k:"act",t:"3. 她说“疼”这句话，通常引导什么行动？",o:[{id:"act_repair",l:"修补、照料，或小心地使用它",ev:"E08, E07"},{id:"act_comfort",l:"安慰它，跟它说话",ev:"E05"},{id:"act_dismiss",l:"别管它，换新的就好",ev:"E02"},{id:"act_ignore",l:"没什么可做的，由它去",ev:"E07"}]}],E:{accurate:{t:"准确理解",d:"你听懂了“疼”的三层用法：有损伤、仍在使用、无人照料。",p:{q:"“不要想，而要看！”——词的意义不在定义里，而在它被使用的那个生活形式里。",c:"Wittgenstein, PI §66"},w:"你选了三样东西：有损伤的物、可观察的损伤、修补与照料。于是你承认了她的用法是一种完整的生活形式。",h:"达成条件：损伤 + 仍在用 + 无人管。",after:"墙补好了。第二年春天，裂缝又裂了一次，玛尔塔又补了一次。她没有再叫你。但你路过时，看见墙根新放了一小袋石灰。"},partial:{t:"部分理解",d:"你抓住了“损伤”，但漏掉了“仍在用”和“无人管”。",p:{q:"“一个词的意义是它在语言中的用法。”",c:"Wittgenstein, PI §43"},w:"你选对了前两题，但第三题选了“安慰”或“别管”。你看见了伤口，却没看见伤口背后的要求。",h:"达成条件：前两题对，第三题选“安慰”或“别管”。",after:"墙补了一半。玛尔塔没说什么，自己把剩下的一半补完。她补得很慢，比平时慢。"},animist:{t:"泛灵误读",d:"你把“疼”理解成了“有灵魂、会害怕、会感到孤单”。",p:{q:"“哲学是一场反对用语言迷惑我们自己的战斗。”",c:"Wittgenstein, PI §109"},w:"你在特征题选了“有感觉/有灵魂”或“会害怕”，或在行动题选了“安慰它”。你把自己的形而上学塞进了她的伦理语言。",h:"达成条件：特征选“有感觉/会害怕”，或行动选“安慰”。",after:"玛尔塔开始跟门说话，跟碗说话。人们说她老糊涂了。她不再跟人说话。"},dismissive:{t:"贬抑误读",d:"你把她的用法归因为“老糊涂了”或“分不清人和物”。",p:{q:"“不要替别人把话说完。”",c:"Wittgenstein, PI 语境精神"},w:"你在指向题选了“人”。你用一个解释关上了她的门。",h:"达成条件：指向题选“人，包括她自己”。",after:"她不再让你进门。那堵墙后来塌了一角。她没有修。"},old:{t:"老旧误读",d:"你以为“所有旧东西都会疼”。",p:{q:"“看见年头，不等于看见伤口。”",c:"Wittgenstein, PI 语境精神"},w:"你在指向题或特征题选了“老旧”。旧茶壶放了四十年，完好无损。",h:"达成条件：指向或特征题选“老旧”。",after:"她不再说“疼”这个字。墙裂了，她只是看着。看很久。"},babel:{t:"巴别塔",d:"语义稳定度归零。词语在你手里散成了沙。",p:{q:"“凡不可说的，应当沉默。”",c:"Wittgenstein, TLP §7"},w:"你在对话和判断中反复消耗语义稳定度。",h:"达成条件：对话中稳定度降至 0。",after:"第二天，没有人能说明白一件事。井水打上来，有人说是甜的，有人说是苦的，有人说是昨天的。村长站在广场中央喊话，喊到第三句，自己也听不懂了。"}}};
+DATA.hans={EV:{E01:{n:"水轮的秘密",t:"object",l:"物件",s:"水轮转得比以往快，但没人去检查过轴承。",x:"水轮在飞速旋转。汉斯说：“我知道它没问题，因为今天早上我亲耳听过了。”"},E02:{n:"磨盘的声音",t:"damage",l:"损伤",s:"磨盘发出异响，汉斯只在场，但他没有亲手摸过。",x:"磨盘发出刺耳的摩擦声。汉斯：“我听到了，绝对有碎石子，但我还没来得及亲手去掏。”"},E03:{n:"面粉的重量",t:"object",l:"物件",s:"面粉袋被助手搬进来，汉斯只看了一眼。",x:"助手搬来面粉袋。汉斯：“我知道这袋有五十斤，因为我看它装满了。”"},E04:{n:"账本上的错漏",t:"damage",l:"损伤",s:"账本记录有误，汉斯没算过就签了字。",x:"账本上写着“收入三桶麦子”。汉斯：“我知道没算错，这是助手报给我的数。”"},E05:{n:"井水的风险",t:"object",l:"物件",s:"井水看似清澈，但汉斯只是“看过”，没做水质测试。",x:"井水很清澈。汉斯：“我知道这水能喝，我天天看它，它没变过色。”"},E06:{n:"助手的推诿",t:"dialog",l:"对话",s:"助手在推卸责任，汉斯愤怒地指出对方“不知道”。",x:"助手：“我听说村长说水有问题。”汉斯：“你‘知道’个屁！你连井边都没去过。”"},E07:{n:"源头污染",t:"damage",l:"损伤",s:"村庄的水源实际上已经被污染了。",x:"下游的树叶枯萎，水面泛着不正常的油光。"},E08:{n:"亲手测试",t:"action",l:"照料",s:"玩家提出必须让汉斯亲自去确认问题。",x:"你提议：“不要听别人说，你亲自去井边看看，去摸一摸磨盘。”"},E10:{n:"村民的质疑",t:"dialog",l:"对话",s:"村民包围了磨坊，要求汉斯给出确凿证据。",x:"村民喊道：“你说水能喝，你拿什么证明？”"}},NOTES:{N_water_plato:{t:"“知识是确证的真信念”",q:"“知识是确证的真信念（JTB）。”<br><br>——汉斯认为“亲耳听到”就是确证，但他忽略了确证本身的可靠性。",c:"Plato, Theaetetus"},N_mill_descartes:{t:"“感觉的欺骗”",q:"“凡是我曾经当作最真实、最可靠而接受过来的东西，都是从感官得来的。”<br><br>——但感官会欺骗我们。",c:"Descartes, Meditationes de prima philosophia"},N_flour_witt:{t:"“语言的界限”",q:"“我的语言的界限意味着我的世界的界限。”<br><br>——汉斯用“我看见”来定义“我知道”。",c:"Wittgenstein, TLP §5.6"},N_ledger_gettier:{t:"“葛梯尔问题”",q:"“即便一个信念是真的且有确证的，它也可能不是知识。”<br><br>——汉斯签了字，账目实际上是对的，但他签字的行为并不是“知道”。",c:"Gettier, Is Justified True Belief Knowledge?"},N_water_moore:{t:"“摩尔悖论”",q:"“我知道外面在下雨，但我不相信外面在下雨。”<br><br>——汉斯宣称“我知道水没问题”，但他的行为暴露了他并不真的“相信”。",c:"Wittgenstein, On Certainty"},N_helper_witt:{t:"“私人语言的驳斥”",q:"“如果只有你一个人知道，那‘知道’这个词就没有意义。”<br><br>——汉斯把知识变成了私人体验。",c:"Wittgenstein, PI §293"},N_test_witt:{t:"“不要想，而要看！”",q:"“不要想，而要看！”<br><br>——你引导汉斯放下“听说”，去亲手触摸和验证。",c:"Wittgenstein, PI §66"},N_village_witt:{t:"“共同体与规则”",q:"“遵守规则是一种实践。”<br><br>——知识必须在一个公共的实践（共同体）中被检验。",c:"Wittgenstein, PI §202"},N_repair_heidegger:{t:"“因缘整体性”",q:"“因缘整体性归根到底要回溯到所用之上。”<br><br>——汉斯去修水轮，是在重建他与世界的“知道”关系。",c:"Heidegger, Sein und Zeit §18"},N_water_quine:{t:"“整体主义”",q:"“我们所谓的知识或信念的整体……是一个人工织造物。”<br><br>——水源的知识依赖于整个村庄的生态系统。",c:"Quine, Two Dogmas of Empiricism"},N_mill_austin:{t:"“言语行为”",q:"“说话就是做事。”<br><br>——汉斯说“我知道水能喝”，是在以磨坊主的身份为这口井做担保。",c:"Austin, How to Do Things with Words"},N_flour_hume:{t:"“因果怀疑”",q:"“我们无从发现原因与结果之间的必然联系。”<br><br>——汉斯以为看到了面粉袋的“大”就知道它的“重”，这是基于习惯的联想。",c:"Hume, An Enquiry Concerning Human Understanding"},N_ledger_anscombe:{t:"“实践知识”",q:"“实践知识不是通过观察得到的，而是在行动中形成的。”<br><br>——知道账本对不对，靠“去算账”这个行动本身。",c:"Anscombe, Intention"},N_helper_freud:{t:"“移情与阻抗”",q:"“你看着别人的时候，其实是在看着自己。”<br><br>——汉斯愤怒于助手的“不知道”，恰恰是因为他恐惧自己也可能“不知道”。",c:"Freud, Jenseits des Lustprinzips"},N_pollution_kuhn:{t:"“范式转移”",q:"“新范式的接受往往需要代际的更替。”<br><br>——要让汉斯承认水源污染，需要的是他整个思维方式的改变。",c:"Kuhn, The Structure of Scientific Revolutions"},N_hans_empiricist:{t:"“经验论者”",q:"“一切知识都从经验开始。”<br><br>——汉斯不是偏执，他是一个极端的经验论者。",c:"Locke, An Essay Concerning Human Understanding"},N_hans_certainty:{t:"“确定性与怀疑”",q:"“怀疑本身只有在某些不容怀疑的东西之上才能运作。”<br><br>——汉斯需要亲手摸到，正是因为他要找一个不可怀疑的支点。",c:"Wittgenstein, On Certainty §115"},N_hans_authority:{t:"“权威与知识”",q:"“知识可以来自他人的证言。”<br><br>——这是一条误读的引用：它把汉斯的“亲知”标准读成了对权威的拒不承认。",c:"Hume, An Enquiry Concerning Human Understanding"},N_hans_piaget:{t:"“具体运算阶段”",q:"“儿童在具体运算阶段才能理解守恒。”<br><br>——这是一条误读的引用：它把汉斯的经验标准读成了认知发展的滞后。",c:"Piaget, La Psychologie de l'intelligence"},N_hans_echo_marta:{t:"“墙在疼，井也在疼”",q:"“损伤不只是物理的，它要求被看见。”<br><br>——你想起玛尔塔：一堵墙的裂缝，和一口井的油光，都在发出同一种要求。",c:"回响 · 来自玛尔塔章",echo:true,src:"玛尔塔章 · 墙在疼"}},QS:[{k:"obj",t:"1. 汉斯说“知道”时，通常指向什么？",o:[{id:"obj_verified",l:"他亲眼所见、亲耳所听的事物",ev:"E01, E03, E05"},{id:"obj_rumor",l:"一切道听途说的消息",ev:"E04, E06"},{id:"obj_power",l:"用来压制别人、建立权威的工具",ev:"E06, E10"},{id:"obj_truth",l:"客观上绝对正确的真理",ev:"E05, E07"}]},{k:"feat",t:"2. 这些事物的共同特征是什么？",o:[{id:"feat_direct",l:"直接呈现在他的感官经验中",ev:"E01, E03, E05"},{id:"feat_certain",l:"必须经过他亲手操作的检验",ev:"E02, E08"},{id:"feat_social",l:"依赖于他人的转述与信任",ev:"E04, E06"},{id:"feat_transcend",l:"超越经验、依靠信仰",ev:"E07"}]},{k:"act",t:"3. 当他说“知道”时，通常引导什么行动？",o:[{id:"act_claim",l:"宣称自己掌握了事实，拒绝继续查证",ev:"E05, E10"},{id:"act_verify",l:"实际上要求自己去动手验证",ev:"E02, E08"},{id:"act_dismiss",l:"贬低他人的信息，抬高自己",ev:"E06"},{id:"act_passive",l:"被动地等待别人给出结论",ev:"E04"}]}],E:{accurate:{t:"准确理解",d:"你听懂了汉斯的“知道”等于“亲手验证的直接经验”。",p:{q:"“不要想，而要看！”——词的意义不在定义里，而在它被使用的那个生活形式里。",c:"Wittgenstein, PI §66"},w:"你选了三样东西：亲身经验、直接呈现、亲手验证。于是你听懂了他把“知识”局限在“亲知”范围内的理由。",h:"达成条件：指向亲身经验 + 特征直接呈现 + 行动要求验证。",after:"井水重新测了。水有问题，但来得及。汉斯亲自去下游看了树叶。回来的时候，他在井边站了很久。"},skeptic:{t:"彻底怀疑论",d:"你让汉斯陷入了对一切经验的怀疑，他连自己的眼睛都不信了。",p:{q:"“怀疑是思想的一种疾病。”",c:"Wittgenstein, On Certainty"},w:"你把他的“知道”引向了道听途说或超越经验的信仰。他发现自己脚下的地是空的。",h:"达成条件：指向题选“道听途说”，或特征题选“超越经验”。",after:"汉斯不再说“我知道”。他什么也不说。磨坊停工了。水轮还在转，但磨盘是空的。"},absolute:{t:"绝对真理误读",d:"你要求汉斯给出那种只有在几何学里才存在的绝对真理。",p:{q:"“在自然科学中，根本没有绝对的确定性。”",c:"Husserl, Die Krisis"},w:"你在指向题选了“客观上绝对正确的真理”，或者在特征题选了“必须经过他亲手操作的检验”。你用一个哲学家的绝对标准去要求一个磨坊主。",h:"达成条件：指向题选“绝对真理”，或特征题选“必须亲手操作”。",after:"他要求每一句话都有证据。没有人再跟他说话。他一个人磨面，一个人吃。"},power:{t:"权力误读",d:"你认为汉斯说“知道”只是为了压制别人。",p:{q:"“知识就是力量。”——但把知识仅仅还原为权力，忽略了知识本身的求真维度。",c:"Foucault, Surveiller et punir"},w:"你在指向题选了“权力”，或在行动题选了“贬低他人”。你看到了他话语里的傲慢，却没看到傲慢底下那个朴素的标准。",h:"达成条件：指向题选“权力”，或行动选“贬低他人”。",after:"他继续用“我知道”压人。没有人再反驳他，也没有人再跟他说话。"},passive:{t:"被动误读",d:"你把汉斯当成了一个只会等待别人结论的懒汉。",p:{q:"“人是一座桥梁，而不是一个目的。”",c:"Nietzsche, Also sprach Zarathustra"},w:"你在特征题选了“依赖他人转述”，或在行动题选了“被动等待”。汉斯恰恰相反，他宁愿相信自己的眼睛，也不愿意相信别人的嘴。",h:"达成条件：特征选“依赖他人”，或行动选“被动等待”。",after:"他不再管磨坊。助手走了。水轮还在转，磨盘上落了一层灰。"},babel:{t:"巴别塔",d:"语义稳定度归零。词语在你手里散成了沙。",p:{q:"“凡不可说的，应当沉默。”",c:"Wittgenstein, TLP §7"},w:"你在对话和判断中反复消耗语义稳定度。",h:"达成条件：对话中稳定度降至 0。",after:"第二天，没有人能说明白一件事。井水打上来，有人说是甜的，有人说是苦的，有人说是昨天的。村长站在广场中央喊话，喊到第三句，自己也听不懂了。"}}};
+DATA.jurgen={EV:{E01:{n:"墙上的图纸",t:"object",l:"物件",s:"村长定下的标准，尤尔根在上面写了粗话。",x:"图纸钉在墙上，边角被火燎得发脆。旁边一行炭笔字，笔画深得几乎划破纸：“放屁”。"},E02:{n:"满地废铁",t:"damage",l:"损伤",s:"不符合图纸的武器，但锋利无比。",x:"地上堆着几十把奇形怪状的断剑、残刀、半截枪头。可你随手捡起一把，刃口在火光里泛着冷白。"},E03:{n:"他的铁锤",t:"object",l:"物件",s:"手柄刻着五道划痕，每打五下换一次角度。",x:"锤柄被手汗浸成深褐色，上面刻着五道平行的划痕。他每砸五下，手腕就转一个角度。"},E04:{n:"半成品的剑",t:"object",l:"物件",s:"打了一半，突然停手，说规矩变了。",x:"一把剑横在铁砧上，剑身呈现出极不规则的弧度。他说“这剑的规矩变了，得重新想”。"},E05:{n:"尤尔根的挑衅",t:"dialog",l:"对话",s:"“你行你上，打不出比这更好的就闭嘴。”",x:"他把铁锤踢到你脚边，锤头砸在地上闷响一声。他抱着胳膊看你，眼神里有火。"},E06:{n:"熔炉边的酒壶",t:"object",l:"物件",s:"壶底刻着“给汉斯”，但汉斯从不喝酒。",x:"熔炉边搁着一只锡酒壶。壶底刻着歪歪扭扭两个字：“给汉斯”。可你记得，磨坊主汉斯滴酒不沾。"},E07:{n:"墙角的涂鸦",t:"damage",l:"损伤",s:"孩子画的：一个铁匠，一把没有形状的剑，旁边写着“真的”。",x:"墙角有一片炭笔涂鸦。一个赤膊的铁匠，举着一把没有形状的剑，剑旁边写着“真的”。"}},NOTES:{N_rule_witt:{t:"“规则遵循的悖论”",q:"“没有任何规则可以决定一种行动，因为每一种行动都可以被弄得符合规则。”<br><br>——规则是在实践中被不断确立的。",c:"Wittgenstein, PI §201"},N_power_foucault:{t:"“规训与惩罚”",q:"“规训制造出顺从的身体。”<br><br>——村长用图纸强压尤尔根，这不是在传承规则，而是在规训。",c:"Foucault, Surveiller et punir"},N_private_kripke:{t:"“私人语言的破产”",q:"“如果只有一个人知道他的规则，那么他就无法被纠正。”<br><br>——如果尤尔根的规矩只有他自己懂，那它就无法在共同体中运作。",c:"Kripke, Wittgenstein on Rules and Private Language"},N_practice_marx:{t:"“劳动与实践”",q:"“人在劳动中不仅改变了自然，也改变了自己。”<br><br>——尤尔根的手茧就是他的规则。",c:"Marx, Ökonomisch-philosophische Manuskripte"},N_shared_witt:{t:"“共同体与约定”",q:"“遵守规则是一种实践。而实践不仅仅是主观的。”<br><br>——只有当大家都按照某种方式行动时，规则才成立。",c:"Wittgenstein, PI §202"},N_nihilism_heidegger:{t:"“虚无主义的深渊”",q:"“如果一切规则都是任意的，那么一切行动也就没有了意义。”",c:"Heidegger, Nietzsche"},N_body_merleau:{t:"“身体图式”",q:"“世界不是我所思考的，而是我所经历的。”<br><br>——铁匠的规矩不在图纸上，在他的手腕、肩背和呼吸里。",c:"Merleau-Ponty, Phénoménologie de la perception"},N_form_life:{t:"“生活形式”",q:"“想象一种语言，就是想象一种生活形式。”<br><br>——要理解尤尔根，不是破译他的词，而是走进他打铁的那一天。",c:"Wittgenstein, PI §19"},N_ostensive:{t:"“实指定义”",q:"“实指定义并不能确定一个词的意义——它只告诉我们‘往哪儿看’，却没告诉我们‘看见什么算数’。”",c:"Wittgenstein, PI §28–34"},N_family:{t:"“家族相似”",q:"“不要想共同点，要看相似性、看亲缘关系。”<br><br>——地上那些废铁没有共同形状，却共享一种“锋利”的亲缘。",c:"Wittgenstein, PI §66–67"},N_forms_life_plural:{t:"“多种生活形式”",q:"“如果一头狮子会说话，我们也听不懂它。”<br><br>——不是尤尔根错了，是你们站在两种生活形式的交界处。",c:"Wittgenstein, PI p.223"},N_habitus:{t:"“惯习”",q:"“惯习是持久的、可转移的秉性系统。”<br><br>——五下、换角度，是被身体吸收的生成性规则。",c:"Bourdieu, Le Sens pratique"},N_tech_repro:{t:"“机械复制”",q:"“即使最完美的复制品也缺少此刻此地。”<br><br>——按图纸打出的十二把剑，一模一样，却没有一把“在此”。",c:"Benjamin, Das Kunstwerk im Zeitalter seiner technischen Reproduzierbarkeit"},N_silence_witt:{t:"“沉默与显示”",q:"“不可说的，必须保持沉默。但它会显示自身。”<br><br>——尤尔根说不出他的规则，但他的手腕在显示它。",c:"Wittgenstein, TLP §7 / PI §88"},N_jurgen_aristotle:{t:"“实践智慧”",q:"“实践智慧不是对普遍东西的知识，而是对具体东西的把握。”",c:"Aristotle, Ethica Nicomachea"},N_jurgen_polanyi:{t:"“默会知识”",q:"“我们知道的，比我们能说出来的多。”<br><br>——尤尔根知道怎么打铁，但他无法把这种知道完整地写成图纸。",c:"Polanyi, The Tacit Dimension"},N_jurgen_rilke:{t:"“手艺的尊严”",q:"“事物在手中变得真实。”<br><br>——铁在尤尔根手里才成为剑；规则也在他手里才成为规则。",c:"Rilke, Dinggedichte（作为意象引文）"},N_jurgen_echo_hans:{t:"“亲手验证的规矩”",q:"“只有亲手摸过的，才算是知道。”<br><br>——你想起汉斯：尤尔根的“五下换角度”，和汉斯的“亲手摸过”，是同一种东西。",c:"回响 · 来自汉斯章",echo:true,src:"汉斯章 · 确证与谎言"},N_jurgen_echo_marta:{t:"“照料，就是规则”",q:"“坏的、还在用的、没人管的，才叫疼。”<br><br>——你想起玛尔塔：尤尔根的半成品剑，也是“坏了、还在用、没人管”的东西。",c:"回响 · 来自玛尔塔章",echo:true,src:"玛尔塔章 · 墙在疼"},N_jurgen_witt2:{t:"“不要想，而要看”",q:"“不要想，而要看！”<br><br>——尤尔根的规则不在纸上，在铁砧的每一次回响里。",c:"Wittgenstein, PI §66"}},QS:[{k:"obj",t:"1. 尤尔根说“规则”时，通常指向什么？",o:[{id:"obj_practice",l:"他身体力行的、在行动中确立的实践",ev:"E03, E04"},{id:"obj_power",l:"用来反抗村长、彰显自我权力的工具",ev:"E01, E05"},{id:"obj_private",l:"只有他自己才懂的、不可言说的内在感觉",ev:"E04, E07"},{id:"obj_nothing",l:"一切规则都是虚假的，根本没有规则",ev:"E02, E05"}]},{k:"feat",t:"2. 这些“规则”的共同特征是什么？",o:[{id:"feat_action",l:"必须通过长期的、共同的身体实践来维持",ev:"E03, E04"},{id:"feat_arbitrary",l:"完全是个人随意的、不受约束的胡来",ev:"E02"},{id:"feat_imposed",l:"是被村长强加的、必须无脑遵守的教条",ev:"E01"},{id:"feat_empty",l:"任何事物都毫无规定性，都是空无",ev:"E02, E05"}]},{k:"act",t:"3. 当尤尔根面对“规则冲突”时，你应当引导什么行动？",o:[{id:"act_negotiate",l:"在共同劳作中重新确立一套双方都接受的临时规则",ev:"E03, E04"},{id:"act_force",l:"用强权逼迫他服从",ev:"E01, E05"},{id:"act_abandon",l:"放任不管，认为规则只是个人的事",ev:"E04, E07"},{id:"act_destroy",l:"干脆把一切都砸烂，因为一切都没有意义",ev:"E02, E05"}]}],E:{accurate:{t:"准确理解",d:"你听懂了尤尔根的“规则”等于“共同实践”。",p:{q:"“不要想，而要看！”——规则不是写在图纸上的教条，而是在行动中被确立的实践。",c:"Wittgenstein, PI §202"},w:"你选了三样东西：实践、行动、协商。于是你和他一起把图纸扔进了炉子。",h:"达成条件：指向实践 + 特征行动 + 行动协商。",after:"铁匠铺的炉火又亮了。他打剑，你递料。他每打五下，换一次角度。墙角那片涂鸦旁边，多了五道划痕。"},rule_misread:{t:"规训误读",d:"你用强权逼迫尤尔根服从村长的图纸。",p:{q:"“规训制造出顺从的身体。”——但顺从的身体交出的武器，也是折断的。",c:"Foucault, Surveiller et punir"},w:"你在指向题选了“权力”，或在行动题选了“用强权逼迫”。你只看到了表面的规则冲突，却没看到隐藏在冲突背后的实践逻辑。",h:"达成条件：指向题选“权力”，或行动选“用强权逼迫”。",after:"他按图纸打了十二把剑。第二年，没有人再找他打铁。他把铁匠铺的门关了一半，另一半留着，说是给风走。"},solipsism_misread:{t:"唯我论误读",d:"你认为规则只是尤尔根个人的事，放任自流。",p:{q:"“私人语言的破产。”——如果只有一个人懂他的规则，那这个规则就没有意义。",c:"Kripke, Wittgenstein on Rules"},w:"你在指向题选了“私人感觉”，或在行动题选了“放任不管”。你放任他沉迷于自己的世界，结果他打出的东西无人能用。",h:"达成条件：指向题选“私人感觉”，或行动选“放任不管”。",after:"他打出的东西越来越怪。人们绕着他走。他一个人对着炉子说话，五下，换角度。"},nihilist_misread:{t:"虚无主义误读",d:"你认为一切规则都是虚假的，把一切都砸烂。",p:{q:"“如果一切规则都是任意的，那么一切行动也就没有了意义。”",c:"Heidegger, Nietzsche"},w:"你在指向题选了“根本没有规则”，或在特征题选了“空无”。你解构了规则，也解构了铁匠铺。",h:"达成条件：指向题选“根本没有规则”，或特征题选“空无”。",after:"铁匠铺的烟囱再没冒过烟。铁砧裂了，他没有换。"},babel:{t:"巴别塔",d:"语义稳定度归零。词语在你手里散成了沙。",p:{q:"“凡不可说的，应当沉默。”",c:"Wittgenstein, TLP §7"},w:"你在对话中不断消耗稳定度。",h:"达成条件：对话中稳定度降至 0。",after:"第二天，没有人能说明白一件事。井水打上来，有人说是甜的，有人说是苦的，有人说是昨天的。村长站在广场中央喊话，喊到第三句，自己也听不懂了。"}}};
+DATA.lina={EV:{E01:{n:"石圈与粉笔圆",t:"object",l:"物件",s:"不闭合的圆，留着一道门。",x:"粉笔画的圆不闭合，缺口正对石头围圈的那道缝。那不像画歪了——像故意留的门。"},E02:{n:"那本无字书",t:"object",l:"物件",s:"几片粗布缝成的“书”，上面只有划痕。",x:"她膝盖上摊着一本“书”——粗布缝的，布面上只有炭笔划痕和涂鸦，没有一个真正的字。"},E03:{n:"缺口的陶碗",t:"object",l:"物件",s:"碗沿缺了一块，她把它当王冠戴。",x:"一只缺口的陶碗搁在石头上。讲到国王时，莉娜把它扣在头顶，孩子们笑得前仰后合。"},E04:{n:"一根羽毛",t:"object",l:"物件",s:"插在石缝里，讲故事前她会摸一下。",x:"一根灰白的羽毛插在石缝里，羽轴已经磨得发亮。莉娜每次开口说“真的”之前，指尖都会在它上面停一停。"},E05:{n:"围坐的孩子们",t:"dialog",l:"对话",s:"他们不追问真假，只问“然后呢”。",x:"四个更小的孩子围坐。莉娜说“真的”时，他们连呼吸都放轻；讲完，只问“然后呢”。"},E06:{n:"莉娜本人",t:"dialog",l:"对话",s:"讲故事时眼睛发亮，讲完立刻恢复平常。",x:"莉娜讲故事时眼睛发亮，声音都换了腔调；一讲完，她立刻恢复平常，问孩子们“你们饿不饿”。"},E07:{n:"地上的字",t:"damage",l:"损伤",s:"她画的“字”，她说“这是我写的”。",x:"粉笔圆旁边有一排她画的“字”，其实是画。她指着它们说“这是我写的”。"}},NOTES:{N_lang_game:{t:"“语言游戏”",q:"“我将把语言和行动——那些交织在一起的东西——称为‘语言游戏’。”<br><br>——莉娜的“真的”只在她的故事圈里有效。",c:"Wittgenstein, PI §7"},N_family_resemblance:{t:"“家族相似”",q:"“不要想共同点，要看相似性、看亲缘关系。”<br><br>——她的“真的”和我们的“真的”共享一个词，却没有共同本质。",c:"Wittgenstein, PI §66–67"},N_form_life_lina:{t:"“生活形式”",q:"“想象一种语言，就是想象一种生活形式。”<br><br>——要理解莉娜，不是纠正她的词，而是坐进她的石圈。",c:"Wittgenstein, PI §19"},N_performative:{t:"“述行句”",q:"“说出这句话，就是在做一件事。”<br><br>——她说“真的”，不是描述事实，而是发出邀请：来，一起假装。",c:"Austin, How to Do Things with Words"},N_make_believe:{t:"“假装与道具”",q:"“虚构不是谎言，它是一种被规则允许的假装。”<br><br>——羽毛、陶碗、无字书，都是她进入假装的开关。",c:"Walton, Mimesis as Make-Believe"},N_fiction_searle:{t:"“虚构话语的逻辑地位”",q:"“虚构不是假装相信，而是假装作出断言。”<br><br>——莉娜不是在骗人。",c:"Searle, The Logical Status of Fictional Discourse"},N_private_lina:{t:"“私人语言的破产”",q:"“如果只有一个人知道他的规则，那么他就无法被纠正。”<br><br>——如果莉娜的“真的”只有她自己懂，那它就只是自言自语。",c:"Kripke, Wittgenstein on Rules and Private Language"},N_discipline_lina:{t:"“规训与惩罚”",q:"“规训制造出顺从的身体。”<br><br>——禁止她说“真的”，不是教会她说话，是教会她闭嘴。",c:"Foucault, Surveiller et punir"},N_narrative_lyotard:{t:"“小型叙事”",q:"“宏大叙事已经失效，剩下的是无数小型叙事。”<br><br>——莉娜的每个故事都是一个不肯长大的小型叙事。",c:"Lyotard, La Condition postmoderne"},N_development_piaget:{t:"“认知发展阶段”",q:"“儿童在前运算阶段尚不能区分现实与虚构。”<br><br>——这是一条误读的引用：它把语言游戏读成了认知缺陷。",c:"Piaget, La Représentation du monde chez l'enfant"},N_lina_husserl:{t:"“生活世界”",q:"“回到事情本身。”<br><br>——莉娜的故事圈就是她的生活世界，它先于一切真假判断。",c:"Husserl, Die Krisis"},N_lina_bakhtin:{t:"“对话与复调”",q:"“每个词都带着他者的声音。”<br><br>——莉娜的“真的”里，有她听过的所有故事的回声。",c:"Bakhtin, Проблемы поэтики Достоевского"},N_lina_gadamer:{t:"“游戏的存在方式”",q:"“游戏的存在方式不是游戏者的主观态度，而是游戏本身。”<br><br>——莉娜不是在“假装”，她是在让故事自己说话。",c:"Gadamer, Wahrheit und Methode"},N_lina_benjamin:{t:"“讲故事的人”",q:"“讲故事的人从经验中汲取故事，又把它还给经验。”",c:"Benjamin, Der Erzähler"},N_lina_ricoeur:{t:"“叙事认同”",q:"“我们通过叙事来理解自己。”<br><br>——莉娜通过讲故事，理解自己是谁。",c:"Ricoeur, Temps et récit"},N_lina_echo_jurgen:{t:"“铁匠说”",q:"“规矩不是谁定的，是咱们一起守出来的。”<br><br>——你想起尤尔根：莉娜的故事圈，也是一种“一起守出来”的规矩。",c:"回响 · 来自尤尔根章",echo:true,src:"尤尔根章 · 规则与幽灵"},N_lina_echo_hans:{t:"“我知道，是真的”",q:"“只有亲手验证过的，才算是知道。”<br><br>——你想起汉斯：莉娜的“真的”不是汉斯意义上的“知道”，但它同样是一种被生活形式支撑的确信。",c:"回响 · 来自汉斯章",echo:true,src:"汉斯章 · 确证与谎言"},N_lina_echo_marta:{t:"“墙和门”",q:"“坏的、还在用的、没人管的，才叫疼。”<br><br>——你想起玛尔塔：莉娜的粉笔圆留着一道门，正如玛尔塔的墙留着一道裂缝。",c:"回响 · 来自玛尔塔章",echo:true,src:"玛尔塔章 · 墙在疼"},N_lina_echo_marta2:{t:"“孩子说‘真的’”",q:"“孩子说‘真的’的时候，不是在骗人。”<br><br>——你想起玛尔塔：她说过，孩子的话里有一种大人已经失去的东西。",c:"回响 · 来自玛尔塔章",echo:true,src:"玛尔塔章 · 墙在疼"},N_lina_wittgenstein2:{t:"“不要想，而要看”",q:"“不要想，而要看！”<br><br>——莉娜的故事不需要解释，它只需要被听见。",c:"Wittgenstein, PI §66"}},QS:[{k:"obj",t:"1. 莉娜说“真的”时，通常是在做什么？",o:[{id:"obj_game",l:"开启一个假装/讲故事的语言游戏",ev:"E01, E04, E05"},{id:"obj_lie",l:"故意说假话骗人",ev:"E03, E06"},{id:"obj_deficit",l:"分不清现实和想象",ev:"E02, E07"},{id:"obj_nothing",l:"一切都没有真假，说什么都一样",ev:"E03, E06"}]},{k:"feat",t:"2. 莉娜的“真的”有什么特征？",o:[{id:"feat_marker",l:"它是一个开场标记，用来邀请听者进入游戏",ev:"E01, E04, E05"},{id:"feat_random",l:"她随口乱说，没有规律",ev:"E02, E07"},{id:"feat_immature",l:"她还小，认知没发展好",ev:"E02, E07"},{id:"feat_empty",l:"任何词都没有确定用法",ev:"E03, E06"}]},{k:"act",t:"3. 面对莉娜和村民的冲突，你应当引导什么行动？",o:[{id:"act_translate",l:"向村民翻译她的游戏规则，让她也能听懂村民的“真假”",ev:"E05, E06"},{id:"act_forbid",l:"禁止她再说“真的”，让她按大人的方式说话",ev:"E03, E06"},{id:"act_ignore",l:"不管，让孩子们自己玩",ev:"E03, E05"},{id:"act_destroy",l:"告诉她故事没有意义，别讲了",ev:"E02, E07"}]}],E:{accurate:{t:"准确理解",d:"你听懂了莉娜的“真的”是故事的开场白。",p:{q:"“不要想，而要看！”——她的“真的”不是判断词，是一个邀请。",c:"Wittgenstein, PI §66"},w:"你选了三样东西：语言游戏、开场标记、翻译。于是你替她把话说给了全村人听。",h:"达成条件：指向游戏 + 特征标记 + 行动翻译。",after:"她又开始讲故事了。开头先说“这不是真的，这是一个故事”。孩子们又回来了。她母亲的那本粗布书，她开始学着写。"},lie_misread:{t:"谎言误读",d:"你认定莉娜在撒谎，禁止她说“真的”。",p:{q:"“规训制造出顺从的身体。”——她学会了用大人的词否定自己的游戏。",c:"Foucault, Surveiller et punir"},w:"你在指向题选了“骗人”，或在行动题选了“禁止”。你把语言游戏读成了道德问题。",h:"达成条件：指向题选“骗人”，或行动选“禁止”。",after:"她把羽毛埋在椴树下。第二年，椴树没开花。孩子们说，是因为她把“真的”埋进去了。"},deficit_misread:{t:"认知缺陷误读",d:"你认为莉娜分不清现实与想象。",p:{q:"“儿童尚不能区分现实与虚构。”——这条引用本身就是误读的产物。",c:"Piaget（作为误读引用）"},w:"你在指向题选了“分不清”，或在特征题选了“认知没发展好”。你把她精熟两种游戏读成了缺陷。",h:"达成条件：指向题选“分不清”，或特征题选“认知没发展好”。",after:"她学会了分辨真假。她不再讲故事。她坐在石圈里，一个人，粉笔圆被雨冲掉了。"},nihilist_misread:{t:"虚无主义误读",d:"你认为故事没有意义，真假都一样。",p:{q:"“如果一切都没有真假，那么讲故事也就没有了意义。”",c:"Lyotard / Heidegger"},w:"你在指向题选了“没有真假”，或在特征题选了“没有确定用法”，或在行动题选了“故事没意义”。你解构了她的游戏。",h:"达成条件：指向题选“没有真假”，或特征题选“没有确定用法”，或行动选“故事没意义”。",after:"她不再讲故事。孩子们散了。椴树下空了。粉笔圆还在，慢慢被雨冲淡。"},babel:{t:"巴别塔",d:"语义稳定度归零。词语在你手里散成了沙。",p:{q:"“凡不可说的，应当沉默。”",c:"Wittgenstein, TLP §7"},w:"你在对话中不断消耗稳定度。",h:"达成条件：对话中稳定度降至 0。",after:"第二天，没有人能说明白一件事。井水打上来，有人说是甜的，有人说是苦的，有人说是昨天的。村长站在广场中央喊话，喊到第三句，自己也听不懂了。"}}};
+DATA.final={EV:{F_E01:{n:"他转头了",t:"dialog",l:"对话",s:"他没有说话，但他转头看了你一眼。",x:"很快，又转回去。但那一眼你看清了：他不是空的。他是被什么截断了。"},F_E02:{n:"饥荒与汉斯",t:"object",l:"刻痕",s:"石板上的第一段村史。",x:"“……那年饥荒，磨坊的汉斯把最后半袋面粉分给了孩子。他自己喝了三天稀汤。”刻痕到这里断了。"},F_E03:{n:"火灾与尤尔根",t:"object",l:"刻痕",s:"石板上的第二段村史。",x:"“……铁匠的师父在火里没出来。尤尔根那年在铁匠铺里关了三天，出来的时候，手上多了五道伤。”刻痕到这里断了。"},F_E04:{n:"裂缝与玛尔塔",t:"object",l:"刻痕",s:"石板上的第三段村史。",x:"“……玛尔塔的墙第一次裂的时候，她还没老。她一个人搬了三天石头，把墙补上了。”刻痕到这里断了。"},F_E05:{n:"故事与莉娜",t:"object",l:"刻痕",s:"石板上的第四段村史。",x:"“……莉娜的母亲是村子里最后一个会讲故事的。她走的那天，莉娜还不会说‘真的’。”刻痕到这里断了，后面是一道很深的划痕。"},F_E06:{n:"没有写完的句子",t:"dialog",l:"对话",s:"他最后一次刻字的地方，刻着一个没有写完的句子。",x:"“……那天以后，我就不知道该——”刻痕到这里断了。后面是一道很长的空白。"}},NOTES:{N_silent_echo_marta:{t:"“疼在语言之外”",q:"“玛尔塔的‘疼’要求被照料。沉默者的‘疼’没有可以照料的对象。他听懂了，但他没有地方放它。”",c:"回响 · 来自玛尔塔章",echo:true,src:"玛尔塔章 · 墙在疼"},N_silent_echo_hans:{t:"“知道在语言之外”",q:"“汉斯的‘我知道’要求亲手验证。沉默者验证过一切，然后停下了。知道得太多，也会让人说不出话。”",c:"回响 · 来自汉斯章",echo:true,src:"汉斯章 · 确证与谎言"},N_silent_echo_jurgen:{t:"“规矩在语言之外”",q:"“尤尔根的‘规矩’要求共同实践。沉默者一个人刻石板，刻了半辈子。他的规矩只有他自己守，所以它没法成立。”",c:"回响 · 来自尤尔根章",echo:true,src:"尤尔根章 · 规则与幽灵"},N_silent_echo_lina:{t:"“真的在语言之外”",q:"“莉娜的‘真的’要求有人听。沉默者讲了半辈子村史，最后没有人听了。他的‘真的’没有听众，就退出了语言。”",c:"回响 · 来自莉娜章",echo:true,src:"莉娜章 · 真的与故事圈"}},QS:[],E:{silent_word_public:{t:"归位",d:"你给了他一个词。他收下了，用得标准，用得正确。他重新成为记录员，石板被填满，村史继续。村庄恢复了沟通，代价是没有人再记得那个不说话的人。",p:{q:"“凡不可说的，应当沉默。”——但你让他说了。他说的每一个字都对，只是不再是他。",c:"Wittgenstein, TLP §7"},w:"你给了他一个公共词。你把他拉回了语言游戏里，也把他从“语言游戏之外”的那个位置上带走了。",h:"达成条件：给他四章中任意一个公共词。",after:"他重新成为记录员。石板被填满。村史继续。没有人记得那个不说话的人。"},silent_silence:{t:"刻痕",d:"你把“沉默”还给了他。他没有收，他把它还给你。然后他开始在石板上刻痕——不是字，是划痕。人们看不懂，但每个人都看得懂。他不再需要说话，但他的刻痕，每个人都看得懂。",p:{q:"“不可说的，必须保持沉默。但它会显示自身。”——他没有说话，但他的刻痕在说。",c:"Wittgenstein, TLP §7 / PI §88"},w:"你看懂了：语言游戏之外还有一种位置。你没有把他拉进任何一种“听懂”里，你承认了那个位置本身。",h:"达成条件：给他「沉默」。",after:"他刻了一整面墙的划痕。没有人看得懂，但每个路过的人都会停一下。停一下，就够了。"},babel:{t:"巴别塔",d:"语义稳定度归零。词语在你手里散成了沙。",p:{q:"“凡不可说的，应当沉默。”",c:"Wittgenstein, TLP §7"},w:"你在终局里反复消耗语义稳定度，直到它归零。这不是某个选择的结果，是整段路的结果。",h:"达成条件：终局稳定度降至 0，或选择不给他任何词。",after:"第二天，没有人能说明白一件事。井水打上来，有人说是甜的，有人说是苦的，有人说是昨天的。村长站在广场中央喊话，喊到第三句，自己也听不懂了。"},silent_misread_power:{t:"误读 · 权力",d:"你把“权力”放在他掌心。他用它把村庄重新组织起来：他说谁疼，谁就疼。他成了新的村长。",p:{q:"“知识就是力量。”——但你给他的不是知识，是权力。",c:"Foucault, Surveiller et punir"},w:"你把自己在某一章犯的错，转嫁到了他身上。",h:"达成条件：在玛尔塔章走贬抑误读，或在尤尔根章走规训误读，或在汉斯章走权力误读。",after:"他成了新的村长。每个人说话之前，都要先看他一眼。石板被填满了，但没有人再去看。"},silent_misread_lie:{t:"误读 · 骗人",d:"你把“骗人”放在他掌心。他每说一句真话，都要补一句“这是骗人的”。没有人再相信任何一句话。",p:{q:"“规训制造出顺从的身体。”——但他顺从的不是规矩，是怀疑。",c:"Foucault, Surveiller et punir"},w:"你把自己在某一章犯的错，转嫁到了他身上。",h:"达成条件：在莉娜章走谎言误读。",after:"每说一句真话，都要补一句“这是骗人的”。村史还在刻，但没有人信。"},silent_misread_nothing:{t:"误读 · 空无",d:"你把“空无”放在他掌心。他砸了石板。人们开始砸东西。村庄失去了历史。",p:{q:"“如果一切规则都是任意的，那么一切行动也就没有了意义。”",c:"Heidegger, Nietzsche"},w:"你把自己在某一章犯的错，转嫁到了他身上。",h:"达成条件：在尤尔根章或莉娜章走虚无主义误读，或在汉斯章走彻底怀疑论。",after:"石板碎了。村史断了。广场上堆着碎石，没有人去清。"},silent_misread_deficit:{t:"误读 · 分不清",d:"你把“分不清”放在他掌心。他被人带走了，关进一间有小窗的屋子。村史没有人刻了。",p:{q:"“儿童尚不能区分现实与虚构。”——这条引用本身就是误读的产物。",c:"Piaget（作为误读引用）"},w:"你把自己在某一章犯的错，转嫁到了他身上。",h:"达成条件：在莉娜章走认知缺陷误读，或在玛尔塔章走泛灵/老旧误读，或在汉斯章走被动误读。",after:"他被带走了。关在一间有小窗的屋子。村史没有人刻。石板空着。"},silent_misread_absolute:{t:"误读 · 绝对",d:"你把“绝对”放在他掌心。他要求一切都有绝对答案。村庄重新学会了说话，但没有人再敢开口。",p:{q:"“在自然科学中，根本没有绝对的确定性。”",c:"Husserl, Die Krisis"},w:"你把自己在某一章犯的错，转嫁到了他身上。",h:"达成条件：在汉斯章走绝对真理误读。",after:"每句话都要有证据，每个证据都要有证据。没有人再开口。广场上很安静。"}}};
+var CH=null,S=null,und=[],last="M00",seg=true,startStab=50;
+var N={marta:{},hans:{},jurgen:{},lina:{},final:{}};
+function $(q){return document.querySelector(q);}
+function cp(o){return JSON.parse(JSON.stringify(o));}
+function init(ch){
+  CH=ch;startStab=inherit(ch);
+  S={
+    stab:startStab,trust:0,diag:"none",ev:[],struck:[],
+    ans:{obj:null,feat:null,act:null},open:false,seen:[],done:false,
+    m5:false,m7:false,
+    finalM01Intro:false,finalAsked:false,finalRead:{},
+    finalIntroShown:false,
+    finalEchoUsed:{marta:false,hans:false,jurgen:false,lina:false}
+  };
+  und=[];seg=true;last="M00";
+}
+function hud(){if(!S)return;$("#trustVal").textContent=S.trust;$("#stabVal").textContent=S.stab;var p=100-S.stab;$("#inkLine").style.background="linear-gradient(90deg,var(--gold) 0%,var(--gold) "+p+"%,#0a0906 "+p+"%)";}
+function addT(n){S.trust=Math.max(-5,S.trust+n);hud();}
+function addS(n){S.stab=Math.max(0,Math.min(100,S.stab+n));hud();if(S.stab<=0){finish("babel");}}
+function addE(id){if(S.ev.indexOf(id)<0){S.ev.push(id);notes();diagBtn();}}
+function addN(id){if(!CH||!id)return;if(G.notes[CH].indexOf(id)<0){G.notes[CH].push(id);saveN(CH);}notes();}
+function toast(m){var t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show");},2200);}
+function push(n){und.push({s:cp(S),n:n,h:$("#text").innerHTML,g:seg});if(und.length>80)und.shift();$("#undoBtn").disabled=und.length<=1;}
+function undo(){
+  if(!S||und.length<=1)return;
+  S.stab=Math.max(0,S.stab-2);hud();
+  if(S.stab<=0){finish("babel");return;}
+  und.pop();
+  var p=und.pop();
+  S=cp(p.s);seg=p.g;
+  typingState=null;
+  $("#text").innerHTML=p.h;
+  $("#choices").innerHTML="";
+  notes();diagBtn();
+  if(S.open){$("#diagBar").classList.add("open");qs();}else $("#diagBar").classList.remove("open");
+  var m=document.createElement("div");m.className="undo-mark";m.textContent="— 已回退至此（语义稳定度 -2） —";$("#text").appendChild(m);
+  var fn=p.n;
+  if(fn&&N[CH]&&typeof N[CH][fn]==="function"){N[CH][fn]();}
+  else if(fn&&N[CH]&&N[CH].hot){N[CH].hot(fn);}
+  else{if(CH===FINAL&&N.final.M00)N.final.M00();else if(N[CH]&&N[CH].M01)N[CH].M01();}
+  und.push({s:cp(S),n:fn,h:p.h,g:seg});
+  toast("已回退一步，稳定度 -2");
+  $("#undoBtn").disabled=und.length<=1;
+}
+var typingState=null;
+
+function addLine(h){
+  var d=document.createElement("div");
+  d.className="line";
+  d.innerHTML=h;
+  $("#text").appendChild(d);
+  $("#text").scrollTop=$("#text").scrollHeight;
+
+  var target=d;
+  var fullHtml=target.innerHTML;
+  var plain=target.textContent;
+  if(plain.length<2){typingState=null;return;}
+
+  var tokens=[];
+  var re=/<[^>]+>|[^<]+/g;
+  var m;
+  while((m=re.exec(fullHtml))!==null){ tokens.push(m[0]); }
+
+  target.innerHTML="";
+  var buf=[];
+  var textBuf="";
+  var ti=0, ci=0, done=false;
+
+  function flush(){ if(textBuf){ buf.push(textBuf); textBuf=""; } }
+  function render(){ target.innerHTML=buf.join("")+textBuf; $("#text").scrollTop=$("#text").scrollHeight; }
+
+  function finishNow(){
+    done=true;
+    target.innerHTML=fullHtml;
+    typingState=null;
+    $("#text").scrollTop=$("#text").scrollHeight;
+  }
+
+  function step(){
+    if(done)return;
+    if(!target.parentNode){ typingState=null; return; }
+    while(ti<tokens.length){
+      var tk=tokens[ti];
+      if(tk.charAt(0)==="<"){
+        flush();
+        buf.push(tk);
+        ti++; ci=0;
+        render();
+        continue;
+      }
+      if(ci<tk.length){
+        textBuf+=tk.charAt(ci);
+        ci++;
+        render();
+        typingState={finish:finishNow};
+        setTimeout(step,16);
+        return;
+      }else{
+        flush();
+        ti++; ci=0;
+      }
+    }
+    done=true;
+    target.innerHTML=fullHtml;
+    typingState=null;
+    $("#text").scrollTop=$("#text").scrollHeight;
+  }
+
+  typingState={finish:finishNow};
+  step();
+}
+document.getElementById("text").addEventListener("click",function(){
+  if(typingState&&typingState.finish){
+    typingState.finish();
+    typingState=null;
+  }
+});
+function note(t){addLine('<div class="narr">'+fmt(t)+'</div>');}
+function narr(t){addLine('<div class="narr">'+fmt(t)+'</div>');}
+function say(t,ch){var e=ch?'<span class="stat-change">'+ch+'</span>':'';addLine('<div><span class="speaker">'+META[CH].who+'</span>'+fmt(t)+e+'</div>');}
+function you(t){addLine('<div><span class="speaker you">你</span>'+fmt(t)+'</div>');}
+function echo(t){addLine('<div class="echo-line">'+fmt(t)+'</div>');}
+function warn(t){addLine('<div class="give-warn">'+fmt(t)+'</div>');}
+function fmt(s){return s.replace(/\{pain:([^}]+)\}/g,'<span class="pain">$1</span>').replace(/\n/g,"<br>");}
+function newSeg(){if(!seg){var d=document.createElement("div");d.className="seg-divider";$("#text").appendChild(d);}seg=false;}
+function opts(list){var b=$("#choices");b.innerHTML="";list.forEach(function(c){var x=document.createElement("button");x.className="choice"+(c.special?" special":"");x.innerHTML=c.label;if(c.disabled)x.disabled=true;else x.onclick=function(){push(last);c.action();};b.appendChild(x);});}
+function notes(){var w=$("#notesWrap");w.innerHTML="";if(!CH||!S){w.innerHTML='<div class="empty-hint">还没有记录任何观察。</div>';return;}var d=DATA[CH];var evs=S.ev.filter(function(e){return META[CH].extra.indexOf(e)<0;});if(evs.length===0&&G.notes[CH].length===0){w.innerHTML='<div class="empty-hint">还没有记录任何观察。</div>';return;}evs.forEach(function(id){var e=d.EV[id];if(!e)return;var b=document.createElement("div");b.className="ev-block";var c=document.createElement("div");c.className="evcard";c.innerHTML='<div class="badge '+e.t+'">'+e.l+'</div><div class="en">'+id+' · '+e.n+'</div><div>'+e.x+'</div><div class="summary">'+e.s+'</div>';b.appendChild(c);w.appendChild(b);});G.notes[CH].forEach(function(nid){if(S.struck.indexOf(nid)>=0)return;var n=d.NOTES[nid];if(!n)return;var b=document.createElement("div");b.className="ev-block";var c=document.createElement("div");c.className="margin-note";c.innerHTML='<button class="strike" onclick="strike(\''+nid+'\')">划掉</button><div class="nt">'+n.t+'</div><div class="q">'+n.q+'</div><div class="c">'+n.c+'</div>';b.appendChild(c);w.appendChild(b);});w.scrollTop=w.scrollHeight;}
+function strike(id){S.struck.push(id);notes();}
+function diagBtn(){if(!S||!CH)return;var b=$("#diagBtn"),h=$("#diagHint");if(CH===FINAL){b.textContent="不 需 诊 断";b.classList.remove("ready");h.classList.remove("show");return;}var got=META[CH].observe.filter(function(e){return S.ev.indexOf(e)>=0;}).length;if(S.diag==="accurate"){b.textContent="已 诊 断";b.classList.remove("ready");h.classList.remove("show");return;}if(got>=4){b.textContent="诊 断";b.classList.add("ready");}else{b.textContent="诊断（证据不足 "+got+"/4）";b.classList.remove("ready");h.classList.remove("show");}}
+function openDiag(){if(!S||CH===FINAL)return;var got=META[CH].observe.filter(function(e){return S.ev.indexOf(e)>=0;}).length;if(got<4)return;S.open=true;$("#diagBar").classList.add("open");qs();}
+function closeDiag(){S.open=false;$("#diagBar").classList.remove("open");}
+function qs(){var box=$("#diagQs");box.innerHTML="";DATA[CH].QS.forEach(function(q){var b=document.createElement("div");b.className="qBlock";var t=document.createElement("div");t.className="qTitle";t.textContent=q.t;b.appendChild(t);q.o.forEach(function(o){var x=document.createElement("button");x.className="qOpt"+(S.ans[q.k]===o.id?" sel":"");x.innerHTML=o.l+(o.ev?' <span class="evTag" title="'+o.ev+'">（'+o.ev+'）</span>':'');x.onclick=function(){S.ans[q.k]=o.id;qs();};b.appendChild(x);});box.appendChild(b);});}
+function submitDiagnosis(){var a=S.ans;if(!a.obj||!a.feat||!a.act){toast("三道题都要选。");return;}closeDiag();if(CH==="marta"){if(a.obj==="obj_damage"&&a.feat==="feat_damage"&&a.act==="act_repair")return N.marta.acc();if(a.obj==="obj_old"||a.feat==="feat_old")return N.marta.old();if(a.obj==="obj_human")return N.marta.dis();if(a.feat==="feat_soul"||a.feat==="feat_fear"||a.act==="act_comfort")return N.marta.ani();return N.marta.part();}if(CH==="hans"){if(a.obj==="obj_power"||a.act==="act_dismiss")return N.hans.pow();if(a.feat==="feat_social"||a.act==="act_passive")return N.hans.pas();if(a.obj==="obj_rumor"||a.feat==="feat_transcend")return N.hans.ske();if(a.obj==="obj_truth"||a.feat==="feat_certain")return N.hans.abs();if(a.obj==="obj_verified"&&a.feat==="feat_direct"&&a.act==="act_verify")return N.hans.acc();return N.hans.ske();}if(CH==="jurgen"){if(a.obj==="obj_power"||a.act==="act_force")return N.jurgen.rul();if(a.obj==="obj_nothing"||a.feat==="feat_empty"||a.act==="act_destroy")return N.jurgen.nih();if(a.obj==="obj_private"||a.act==="act_abandon")return N.jurgen.sol();if(a.obj==="obj_practice"&&a.feat==="feat_action"&&a.act==="act_negotiate")return N.jurgen.acc();return N.jurgen.sol();}if(CH==="lina"){if(a.obj==="obj_lie"||a.act==="act_forbid")return N.lina.lie();if(a.obj==="obj_deficit"||a.feat==="feat_immature")return N.lina.def();if(a.obj==="obj_nothing"||a.feat==="feat_empty"||a.act==="act_destroy")return N.lina.nih();if(a.obj==="obj_game"&&a.feat==="feat_marker"&&a.act==="act_translate")return N.lina.acc();return N.lina.lie();}}
+
+function babelEffect(){
+  document.body.classList.add("babel-mode");
+  var chaos=["▓","░","▒","█","?","#","※","¤","†","‡","≈","∞","◊","§","¶","×","÷","≠","⌧","⌬"];
+  function scramble(el){
+    if(!el)return;
+    var orig=el.getAttribute("data-orig");
+    if(orig===null){orig=el.textContent;el.setAttribute("data-orig",orig);}
+    var out="";
+    for(var i=0;i<orig.length;i++){
+      var ch=orig.charAt(i);
+      if(ch===" "||ch==="\n"){out+=ch;continue;}
+      if(Math.random()<0.18) out+=chaos[Math.floor(Math.random()*chaos.length)];
+      else out+=ch;
+    }
+    el.textContent=out;
+    el.style.fontSize=(14+Math.random()*10)+"px";
+    el.style.letterSpacing=(Math.random()*6-2)+"px";
+    el.style.display="inline-block";
+    el.style.transform="translate("+(Math.random()*10-5)+"px,"+(Math.random()*8-4)+"px) rotate("+(Math.random()*4-2)+"deg)";
+  }
+  var targets=document.querySelectorAll("#settle .eName,#settle .edesc,#settle .eafter,#settle .lock-note,#settle .statVal,#settle .statLabel,#settle .stitle");
+  var timer=setInterval(function(){
+    targets.forEach(scramble);
+  },180);
+  setTimeout(function(){
+    clearInterval(timer);
+    targets.forEach(function(el){
+      var o=el.getAttribute("data-orig");
+      if(o!==null)el.textContent=o;
+      el.style.fontSize="";el.style.letterSpacing="";el.style.transform="";el.style.display="";
+    });
+    document.body.classList.remove("babel-mode");
+  },4200);
+}
+
+function finish(type){var id=CH;
+  if(type==="babel"||type==="silent_babel"||type==="silent_babel_passive"){
+    saveB();S.stab=startStab;saveS(id,startStab);settle("babel");return;
+  }
+  if(DATA[id].E[type]&&G.endings[id].indexOf(type)<0){G.endings[id].push(type);saveE(id);}
+  saveS(id,S.stab);if(type==="accurate")G.cleared[id]=true;if(id===FINAL)G.finalUnlocked=true;settle(type);
+}
+function map(){var b=$("#chapterMap");b.innerHTML="";ORDER.concat([FINAL]).forEach(function(id){var m=META[id],u=unlocked(id),c=G.cleared[id];var tot=Object.keys(DATA[id].E).filter(function(k){return k!=="babel";}).length;var got=G.endings[id].filter(function(x){return DATA[id].E[x]&&x!=="babel";}).length;var row=document.createElement("div");row.className="chapter-row"+(m.isFinal?" final":"")+(u?(c?" cleared":" unlocked"):" locked");var meta;if(id===FINAL){if(!u)meta='未解锁<br><span style="color:#8a6a50">需四章全部达成「准确理解」</span>';else if(c)meta='结局 '+got+'/'+tot+'<br><span class="inherit">已通关</span>';else meta='结局 '+got+'/'+tot+'<br><span class="inherit">进入时稳定度 '+inherit(id)+'</span>';}else{if(!u)meta='未解锁<br><span style="color:#8a6a50">需在上一章达成「准确理解」</span>';else if(c)meta='结局 '+got+'/'+tot+'<br><span class="inherit">已通关</span>';else meta='结局 '+got+'/'+tot+'<br><span class="inherit">进入时稳定度 '+inherit(id)+'</span>';}row.innerHTML='<div class="ch-idx">'+m.idx+'</div><div class="ch-body"><div class="ch-title">'+m.title+'</div><div class="ch-sub">'+m.sub+'</div></div><div class="ch-meta">'+meta+'</div><button class="ch-btn"'+(u?'':' disabled')+'>'+(u?(c?"重玩":"进入"):"锁定")+'</button>';if(u)row.querySelector(".ch-btn").onclick=function(){start(id);};b.appendChild(row);});}
+function start(id){loadG();if(!unlocked(id)){toast(id===FINAL?"四章尚未全部达成「准确理解」，终局尚未解锁。":"上一章尚未达成「准确理解」，本章尚未解锁。");return;}init(id);$("#menu").classList.remove("show");$("#intro").classList.remove("show");$("#settle").classList.remove("show");$("#collection").classList.remove("show");$("#notesGallery").classList.remove("show");$("#text").innerHTML="";$("#choices").innerHTML="";typingState=null;scene(id);hud();notes();diagBtn();push("M00");if(id===FINAL)N.final.M00();else N[id].M00();}
+function restart(){start(CH);}
+function goMainMenu(){$("#settle").classList.remove("show");$("#collection").classList.remove("show");$("#notesGallery").classList.remove("show");$("#menu").classList.add("show");loadG();map();}
+function resetData(){if(confirm("确定清除全部记录吗？此操作不可逆。")){Object.keys(localStorage).forEach(function(k){if(k.indexOf("village_v")===0)localStorage.removeItem(k);});location.reload();}}
+function showBabel(){$("#menu").classList.remove("show");var o=document.createElement("div");o.className="overlay show";o.innerHTML='<div class="overlay-inner"><h1 style="color:var(--gold);font-size:24px;letter-spacing:4px;margin-bottom:8px">巴 别 塔</h1><div class="gallery-sub">全局失败结局 · 任一章节语义稳定度归零</div><div class="babel-fixed">'+babelCard()+'</div><div style="margin-top:24px"><button class="hud-btn" style="padding:9px 24px;color:var(--gold);border-color:var(--gold)" onclick="this.closest(\'.overlay\').remove();goMainMenu()">返回主菜单</button></div></div>';document.body.appendChild(o);}
+function babelCard(){var u=G.babel;return '<div class="babel-card'+(u?' unlocked':'')+'"><div class="bc-head"><span class="bc-title">'+(u?'巴别塔':'？？？')+'</span><span class="bc-tag">GLOBAL · 语义归零</span></div><div class="bc-desc">'+(u?'你在某一段诊断中让语义稳定度降到了零。词语散成沙，村庄陷入巴别塔状态。第二天，没有人能说明白一件事。井水打上来，有人说是甜的，有人说是苦的，有人说是昨天的。村长站在广场中央喊话，喊到第三句，自己也听不懂了。':'任一章节的语义稳定度降至 0 时达成。五段诊断，五段语言游戏，都可能在你的手里崩解。')+'</div><div class="bc-philo">“凡不可说的，应当沉默。”<span class="cite">Wittgenstein, TLP §7</span></div></div>';}
+function settle(type){
+  var id=CH,e=DATA[id].E[type];
+  var total=Object.keys(DATA[id].E).filter(function(k){return k!=="babel";}).length;
+  var got=G.endings[id].filter(function(x){return DATA[id].E[x]&&x!=="babel";}).length;
+  var dots=Object.keys(DATA[id].E).filter(function(k){return k!=="babel";}).map(function(k){return '<div class="dot'+(G.endings[id].indexOf(k)>=0?' on':'')+'"></div>';}).join("");
+  var i=ORDER.indexOf(id),nx=i>=0&&i<ORDER.length-1?ORDER[i+1]:null;
+  var note;
+  if(id===FINAL){note='终局已落定。你给出去的，或没有给出去的，都收不回来了。';}
+  else if(type!=="accurate"){note='本章未达成「准确理解」，'+(nx?'下一章（'+META[nx].title+'）尚未解锁。':'无法进入终局。')+'可点击「重玩本章」。';}
+  else if(nx){note='你达成了「准确理解」——下一章（'+META[nx].title+'）已解锁。';}
+  else{note='你走完了最后一章。四段诊断，四种语言游戏，都在你手里落定。终局已解锁。';}
+  var btns="";
+  if(type==="babel")btns+='<button class="babel-continue" onclick="restart()">回到本章继续</button>';
+  btns+='<button onclick="showCollection(\''+id+'\')">查看思想画廊</button><button onclick="showNotes(\''+id+'\')">查看边注图鉴</button><button class="plain" onclick="goMainMenu()">返回主菜单</button>';
+  if(type!=="babel")btns+='<button class="plain" onclick="restart()">重玩本章</button>';
+  $("#settle").className="overlay show"+(id===FINAL?" final":"");
+  $("#settleContent").innerHTML='<div class="stitle">'+META[id].title+' · 章 节 结 算</div><div class="eName">'+e.t+'</div><div class="edesc">'+e.d+'</div>'+(e.after?'<div class="eafter">后来：'+e.after+'</div>':'')+'<div class="stats"><div class="statItem"><div class="statVal">'+S.stab+'</div><div class="statLabel">最终稳定度</div></div><div class="statItem"><div class="statVal">'+S.trust+'</div><div class="statLabel">'+META[id].who+'信任</div></div><div class="statItem"><div class="statVal">'+got+'</div><div class="statLabel">本章结局</div></div><div class="statItem"><div class="statVal">'+G.notes[id].length+'</div><div class="statLabel">留存边注</div></div></div><div class="progDots">'+dots+'</div><div style="margin-bottom:14px;color:var(--dim);font-size:13px">本章结局 '+got+' / '+total+'</div><div class="lock-note">'+note+'</div><div class="btns">'+btns+'</div>';
+  if(type==="babel"){ babelEffect(); }
+}
+var colTab=null,ngTab=null;
+function tabs(box,active,mode){var b=document.getElementById(box);b.innerHTML="";ORDER.concat([FINAL]).forEach(function(id){var tot,got;if(mode==="e"){tot=Object.keys(DATA[id].E).filter(function(k){return k!=="babel";}).length;got=G.endings[id].filter(function(x){return DATA[id].E[x]&&x!=="babel";}).length;}else{tot=Object.keys(DATA[id].NOTES).length;got=G.notes[id].filter(function(x){return DATA[id].NOTES[x];}).length;}var x=document.createElement("button");x.className="tab-btn"+(active===id?" active":"")+(id===FINAL?" final":"");x.innerHTML=META[id].title+' <span class="tab-prog">'+got+'/'+tot+'</span>';x.onclick=function(){if(mode==="e")showCollection(id);else showNotes(id);};b.appendChild(x);});}
+function showCollection(id){$("#settle").classList.remove("show");$("#menu").classList.remove("show");$("#notesGallery").classList.remove("show");$("#intro").classList.remove("show");$("#collection").classList.add("show");colTab=id||colTab||ORDER[0];$("#babelCol").innerHTML=babelCard();tabs("colTabs",colTab,"e");var g=$("#colGrid");g.innerHTML="";var d=DATA[colTab];Object.keys(d.E).filter(function(k){return k!=="babel";}).forEach(function(eid){var e=d.E[eid],u=G.endings[colTab].indexOf(eid)>=0;var c=document.createElement("div");c.className="colCard"+(u?" unlocked":" locked")+(colTab===FINAL?" final":"");if(u){c.innerHTML='<div class="colTitle">'+e.t+'</div><div class="colDesc">'+e.d+'</div><div style="font-size:10.5px;color:var(--gold);margin-top:10px;opacity:.6">点击展开 ▾</div><div class="detail"><div class="philo">“'+e.p.q+'”<span class="cite">'+e.p.c+'</span></div><div class="why">'+e.w+'</div>'+(e.after?'<div class="after">'+e.after+'</div>':'')+'</div>';c.onclick=function(){c.classList.toggle("expanded");};}else{c.innerHTML='<div class="colTitle">???</div><div class="colDesc">尚未解锁。</div><div class="colHint">💡 '+e.h+'</div>';}g.appendChild(c);});var total=Object.keys(d.E).filter(function(k){return k!=="babel";}).length,got=G.endings[colTab].filter(function(x){return d.E[x]&&x!=="babel";}).length;var at=0,ag=0;ORDER.concat([FINAL]).forEach(function(c){Object.keys(DATA[c].E).forEach(function(k){if(k!=="babel"){at++;if(G.endings[c].indexOf(k)>=0)ag++;}});});$("#colFooter").innerHTML='<p>本章结局 '+got+' / '+total+' · 全局结局 '+ag+' / '+at+'</p><div class="encourage">'+(got<total?'本章还有 '+(total-got)+' 种理解没有走到。':'你走完了'+META[colTab].title+'章节的全部理解方式。')+'</div><button onclick="goMainMenu()" style="border-color:var(--line);color:var(--dim)">返回主菜单</button>';}
+function showNotes(id){$("#settle").classList.remove("show");$("#menu").classList.remove("show");$("#collection").classList.remove("show");$("#intro").classList.remove("show");$("#notesGallery").classList.add("show");ngTab=id||ngTab||ORDER[0];$("#babelNg").innerHTML=babelCard();tabs("ngTabs",ngTab,"n");var only=document.getElementById("onlyUnlocked")&&document.getElementById("onlyUnlocked").checked;var g=$("#ngGrid");g.innerHTML="";var d=DATA[ngTab];Object.keys(d.NOTES).forEach(function(nid){var n=d.NOTES[nid],u=G.notes[ngTab].indexOf(nid)>=0;if(only&&!u)return;var c=document.createElement("div");c.className="noteCard"+(u?"":" locked")+(n.echo?" echo":"");if(u)c.innerHTML='<div class="nt-title">'+n.t+'</div><div class="nt-quote">'+n.q+'</div>'+(n.echo?'<div class="nt-src">'+n.src+'</div>':'')+'<div class="nt-cite">'+n.c+'</div>';else c.innerHTML='<div class="nt-title">？？？</div><div class="nt-quote" style="color:var(--line);font-size:24px;display:flex;align-items:center;justify-content:center;min-height:60px">未 记 录</div>';g.appendChild(c);});var total=Object.keys(d.NOTES).length,got=G.notes[ngTab].filter(function(x){return d.NOTES[x];}).length;var at=0,ag=0;ORDER.concat([FINAL]).forEach(function(c){Object.keys(DATA[c].NOTES).forEach(function(k){at++;if(G.notes[c].indexOf(k)>=0)ag++;});});$("#ngFooter").innerHTML='<p>本章边注 '+got+' / '+total+' · 全局边注 '+ag+' / '+at+'</p><div class="encourage">每一句原文，都是思想史里的一把钥匙。</div><button onclick="goMainMenu()" style="border-color:var(--line);color:var(--dim)">返回主菜单</button>';}
+function scene(id){var s=$("#sceneSvg");if(id==="marta"){s.innerHTML='<line x1="20" y1="270" x2="380" y2="270" stroke="#332e25"/><rect x="30" y="40" width="180" height="230" fill="none" stroke="#3a3328"/><g id="cg"><path d="M150 45 L145 110 L152 150 L148 220 L155 268" stroke="#0a0906" fill="none"/></g><g class="hot" data-ev="E01" onclick="hotObs(\'E01\')"><rect class="hotshape" x="120" y="40" width="60" height="230"/><text class="hot-label" x="150" y="34" text-anchor="middle">墙</text></g><g class="hot" data-ev="E02" onclick="hotObs(\'E02\')"><rect class="hotshape" x="230" y="190" width="70" height="80"/><text class="hot-label" x="265" y="185" text-anchor="middle">木椅</text></g><g class="hot" data-ev="E03" onclick="hotObs(\'E03\')"><rect class="hotshape" x="320" y="200" width="55" height="65"/><text class="hot-label" x="347" y="195" text-anchor="middle">药膏</text></g><g class="hot" data-ev="E04" onclick="hotObs(\'E04\')"><rect class="hotshape" x="310" y="255" width="60" height="14"/><text class="hot-label" x="340" y="252" text-anchor="middle">旧鞋</text></g><g class="hot" data-ev="E05" onclick="hotObs(\'E05\')"><rect class="hotshape" x="220" y="120" width="40" height="45"/><text class="hot-label" x="240" y="115" text-anchor="middle">陶杯</text></g><g class="hot" data-ev="E06" onclick="hotObs(\'E06\')"><rect class="hotshape" x="360" y="60" width="30" height="90"/><text class="hot-label" x="375" y="55" text-anchor="middle">铁锤</text></g><g class="hot" data-ev="E09" onclick="hotObs(\'E09\')"><rect class="hotshape" x="220" y="230" width="48" height="35"/><text class="hot-label" x="244" y="226" text-anchor="middle">茶壶</text></g>';}else if(id==="hans"){s.innerHTML='<line x1="20" y1="270" x2="380" y2="270" stroke="#332e25"/><rect x="40" y="80" width="120" height="190" fill="none" stroke="#3a3328"/><path d="M40 80 L100 20 L160 80 Z" fill="none" stroke="#3a3328"/><g transform="translate(260,150)"><circle r="50" fill="none" stroke="#3a3328"/><circle r="10" fill="none" stroke="#3a3328"/><line x1="0" y1="-50" x2="0" y2="50" stroke="#3a3328"/><line x1="-50" y1="0" x2="50" y2="0" stroke="#3a3328"/></g><g class="hot" data-ev="E01" onclick="hotObs(\'E01\')"><rect class="hotshape" x="200" y="90" width="120" height="120"/><text class="hot-label" x="260" y="85" text-anchor="middle">水轮</text></g><g class="hot" data-ev="E02" onclick="hotObs(\'E02\')"><rect class="hotshape" x="160" y="200" width="60" height="60"/><text class="hot-label" x="190" y="195" text-anchor="middle">磨盘</text></g><g class="hot" data-ev="E03" onclick="hotObs(\'E03\')"><rect class="hotshape" x="70" y="200" width="50" height="60"/><text class="hot-label" x="95" y="195" text-anchor="middle">面粉袋</text></g><g class="hot" data-ev="E04" onclick="hotObs(\'E04\')"><rect class="hotshape" x="40" y="120" width="40" height="40"/><text class="hot-label" x="60" y="115" text-anchor="middle">账本</text></g><g class="hot" data-ev="E05" onclick="hotObs(\'E05\')"><rect class="hotshape" x="320" y="220" width="50" height="50"/><text class="hot-label" x="345" y="215" text-anchor="middle">井水</text></g><g class="hot" data-ev="E06" onclick="hotObs(\'E06\')"><rect class="hotshape" x="280" y="50" width="40" height="60"/><text class="hot-label" x="300" y="45" text-anchor="middle">助手</text></g>';}else if(id==="jurgen"){s.innerHTML='<line x1="20" y1="270" x2="380" y2="270" stroke="#332e25"/><rect x="50" y="150" width="100" height="120" fill="none" stroke="#3a3328"/><circle cx="100" cy="200" r="30" fill="none" stroke="#3a3328"/><rect x="200" y="230" width="80" height="40" fill="none" stroke="#3a3328"/><rect x="300" y="60" width="60" height="80" fill="none" stroke="#3a3328"/><g class="hot" data-ev="E01" onclick="hotObs(\'E01\')"><rect class="hotshape" x="300" y="60" width="60" height="80"/><text class="hot-label" x="330" y="55" text-anchor="middle">图纸</text></g><g class="hot" data-ev="E02" onclick="hotObs(\'E02\')"><rect class="hotshape" x="60" y="220" width="80" height="50"/><text class="hot-label" x="100" y="215" text-anchor="middle">废铁</text></g><g class="hot" data-ev="E03" onclick="hotObs(\'E03\')"><rect class="hotshape" x="150" y="150" width="40" height="80"/><text class="hot-label" x="170" y="145" text-anchor="middle">铁锤</text></g><g class="hot" data-ev="E04" onclick="hotObs(\'E04\')"><rect class="hotshape" x="250" y="180" width="60" height="40"/><text class="hot-label" x="280" y="175" text-anchor="middle">半成剑</text></g><g class="hot" data-ev="E05" onclick="hotObs(\'E05\')"><rect class="hotshape" x="200" y="60" width="60" height="60"/><text class="hot-label" x="230" y="55" text-anchor="middle">尤尔根</text></g><g class="hot" data-ev="E06" onclick="hotObs(\'E06\')"><rect class="hotshape" x="140" y="180" width="26" height="34"/><text class="hot-label" x="153" y="175" text-anchor="middle">酒壶</text></g><g class="hot" data-ev="E07" onclick="hotObs(\'E07\')"><rect class="hotshape" x="325" y="215" width="46" height="46"/><text class="hot-label" x="348" y="210" text-anchor="middle">涂鸦</text></g>';}else if(id==="lina"){s.innerHTML='<line x1="20" y1="270" x2="380" y2="270" stroke="#332e25"/><path d="M40 270 L40 140" stroke="#3a3328" stroke-width="6"/><ellipse cx="40" cy="120" rx="48" ry="40" fill="none" stroke="#3a3328"/><ellipse cx="220" cy="250" rx="120" ry="30" fill="none" stroke="#3a3328" stroke-dasharray="4 6"/><ellipse cx="220" cy="240" rx="80" ry="20" fill="none" stroke="#3a3328" stroke-dasharray="2 5"/><circle cx="220" cy="170" r="14" fill="none" stroke="#3a3328"/><path d="M220 184 L220 220" stroke="#3a3328"/><circle cx="160" cy="240" r="8" fill="none" stroke="#3a3328"/><circle cx="280" cy="240" r="8" fill="none" stroke="#3a3328"/><circle cx="200" cy="258" r="8" fill="none" stroke="#3a3328"/><circle cx="245" cy="258" r="8" fill="none" stroke="#3a3328"/><g class="hot" data-ev="E01" onclick="hotObs(\'E01\')"><ellipse class="hotshape" cx="220" cy="245" rx="90" ry="28"/><text class="hot-label" x="220" y="288" text-anchor="middle">粉笔圆</text></g><g class="hot" data-ev="E02" onclick="hotObs(\'E02\')"><rect class="hotshape" x="296" y="116" width="48" height="38"/><text class="hot-label" x="320" y="112" text-anchor="middle">无字书</text></g><g class="hot" data-ev="E03" onclick="hotObs(\'E03\')"><path class="hotshape" d="M112 122 Q130 158 148 122 Z"/><text class="hot-label" x="130" y="116" text-anchor="middle">缺口碗</text></g><g class="hot" data-ev="E04" onclick="hotObs(\'E04\')"><rect class="hotshape" x="84" y="172" width="32" height="36"/><text class="hot-label" x="100" y="168" text-anchor="middle">羽毛</text></g><g class="hot" data-ev="E05" onclick="hotObs(\'E05\')"><rect class="hotshape" x="150" y="228" width="140" height="44"/><text class="hot-label" x="220" y="224" text-anchor="middle">孩子们</text></g><g class="hot" data-ev="E06" onclick="hotObs(\'E06\')"><rect class="hotshape" x="200" y="150" width="40" height="80"/><text class="hot-label" x="220" y="146" text-anchor="middle">莉娜</text></g><g class="hot" data-ev="E07" onclick="hotObs(\'E07\')"><rect class="hotshape" x="150" y="250" width="60" height="22"/><text class="hot-label" x="180" y="282" text-anchor="middle">地上的字</text></g>';}else{s.innerHTML='<line x1="20" y1="270" x2="380" y2="270" stroke="#332e25"/><rect x="140" y="90" width="120" height="160" fill="none" stroke="#3a3328" stroke-width="1.4"/><path d="M150 110 L250 110 M150 130 L230 130 M150 150 L250 150 M150 170 L220 170 M150 190 L250 190" stroke="#3a3328" stroke-width="1" opacity=".7"/><circle cx="200" cy="70" r="12" fill="none" stroke="#3a3328" stroke-width="1.4"/><path d="M200 82 L200 88" stroke="#3a3328" stroke-width="1.2"/><g class="hot" data-ev="F_E01" onclick="hotObs(\'F_E01\')"><rect class="hotshape" x="160" y="40" width="80" height="60"/><text class="hot-label" x="200" y="34" text-anchor="middle">沉默者</text></g><g class="hot" data-ev="F_E02" onclick="hotObs(\'F_E02\')"><rect class="hotshape" x="140" y="90" width="120" height="160"/><text class="hot-label" x="200" y="268" text-anchor="middle">石板刻痕</text></g>';}}
+function hotObs(id){if(N[CH]&&N[CH].hot)N[CH].hot(id);}
+
+/* 玛尔塔 */
+N.marta.M00=function(){last="M00";newSeg();narr("雨已经下了十四天。没有人记得它是什么时候开始的。墙根都泡软了，村长把一张盖了红印章的图纸钉在教堂门前的木板上，说从今天起，屋墙按图纸修。没有人去看那张图纸。");narr("黄昏没有完全落下。墙根积着一小片水，裂缝从窗框斜着爬到地面。");narr("玛尔塔蹲在墙边，掌心贴着砖面，像在听里面有什么东西慢慢醒来。");say("轻一点，墙。\n今晚要下雨。\n你别{pain:疼}得太响，屋里的人会睡不着。");newSeg();narr("这句话落在了一个你不熟悉的位置。");opts([{label:"【从墙开始调查】",special:true,action:function(){N.marta.hot("E01");}},{label:"“墙不会疼。”",action:function(){newSeg();you("墙不会疼。");say("城里人总爱替东西决定它们该不该疼。"," [信任 -1，稳定度 -2] ");addT(-1);addS(-2);addE("E01");N.marta.M01();}},{label:"“我能帮你修吗？”",action:function(){newSeg();you("我能帮你修吗？");say("先听听它到底伤在哪儿，再说修。"," [信任 +1] ");addT(1);addE("E01");addE("E08");N.marta.M01();}},{label:"（保持沉默）",action:function(){newSeg();narr("你什么也没说。玛尔塔继续摸着墙，不再解释。");addE("E01");N.marta.M01();}}]);};
+N.marta.M01=function(){last="M01";newSeg();narr("旧屋不大。点中间的物件，或者和玛尔塔说话。");var o=[];var obs=[["E02","缺角的木椅","chair"],["E03","膝盖与药膏","knee"],["E04","门边的旧鞋","shoe"],["E09","桌上的旧茶壶","pot"],["E05","桌角的裂口陶杯","cup"],["E06","门后的新铁锤","hammer"]];obs.forEach(function(it){if(S.ev.indexOf(it[0])<0)o.push({label:"【观察】"+it[1],action:function(){N.marta[it[2]]();}});});var c=S.ev.filter(function(e){return e!=="E08"&&e!=="E10"&&e!=="E11";}).length;if(c>=4&&S.ev.indexOf("E10")<0)o.push({label:"【对话】玛尔塔放下手里的布，第一次正面看着你。",special:true,action:function(){N.marta.M06();}});if(["E01","E02","E03"].every(function(x){return S.ev.indexOf(x)>=0;})&&(S.ev.indexOf("E05")>=0||S.ev.indexOf("E06")>=0)&&!S.m5&&S.ev.indexOf("E10")>=0)o.push({label:"【事件】风变大了，墙后传来滴答声……",special:true,action:function(){N.marta.M05();}});if(S.diag==="accurate")o.push({label:"【继续】和玛尔塔一起修墙。",special:true,action:function(){N.marta.After();}});if(o.length===0)o.push({label:"（屋子里安静下来。）",disabled:true});opts(o);diagBtn();};
+N.marta.hot=function(id){var m={E01:"wall",E02:"chair",E03:"knee",E04:"shoe",E05:"cup",E06:"hammer",E09:"pot"};if(m[id])N.marta[m[id]]();};
+N.marta.wall=function(){last="wall";if(S.ev.indexOf("E01")>=0){newSeg();narr("你又看了一会儿墙。裂缝没有变。");N.marta.M01();return;}newSeg();narr("墙上的裂缝从窗框斜着爬到地面，边缘被反复摸过，发亮。墙根积着一小片水。");say("它{pain:疼}。水从后面来。");you("墙哪里疼？");say("裂在这里。你看不见吗？"," [信任 +1] ");addT(1);addE("E01");addN("N_wall_heidegger");narr("你看她补墙的手法。石头怎么摆，灰怎么抹，手很熟。熟得不像一个人练出来的。");say("这堵墙，我补了七次。");narr("她顿了顿。");say("前六次，是老石匠教的。第七次，是我自己补的。");narr("她没有说老石匠去哪儿了。你也没有问。");N.marta.M01();};
+N.marta.chair=function(){last="chair";newSeg();narr("椅背被磨得发白，一条腿垫着折叠的旧布。它显然仍被每天使用。");say("别坐那张。\n它{pain:疼}得厉害，撑不了人的。");opts([{label:"“是因为椅腿裂了吗？”",action:function(){newSeg();you("是因为椅腿裂了吗？");say("嗯。裂了还要撑人，最疼。"," [信任 +1] ");addT(1);addE("E02");N.marta.M01();}},{label:"“它听得懂你说话？”",action:function(){newSeg();you("它听得懂你说话？");say("听不懂。疼又不一定要听得懂。");addE("E02");addN("N_chair_witt");N.marta.M01();}},{label:"“那换一张新的。”",action:function(){newSeg();you("那换一张新的。");say("新的没有这张稳。它只是伤了，不是没用了。");addE("E02");N.marta.M01();}},{label:"“你把它当人。”",action:function(){newSeg();you("你把它当人。");say("我把它当椅子。"," [信任 -1] ");addT(-1);addE("E02");N.marta.M01();}}]);};
+N.marta.knee=function(){last="knee";newSeg();narr("药膏罐开着，气味很冲。她的膝盖确实肿着，但她已经不再挑水、不再搬重物。");you("你的膝盖也受伤了吗？");say("不{pain:疼}，只是老了。\n我不再挑水了，药自己上。\n它有人管，也不撑重了。");opts([{label:"“所以‘疼’不只是坏了，还得是没人管、还在撑着用？”",action:function(){newSeg();you("所以‘疼’不只是坏了，还得是没人管、还在撑着用？");say("你问到点子上了。坏了有人管，就不叫疼。叫修。"," [信任 +2] ");addT(2);addE("E03");addN("N_knee_heidegger");N.marta.M01();}},{label:"“可你还是不舒服。”",action:function(){newSeg();you("可你还是不舒服。");say("不舒服是我的事。疼是它的事。");addE("E03");addN("N_knee_merleau");N.marta.M01();}},{label:"“你在硬撑。”",action:function(){newSeg();you("你在硬撑。");say("你又在替我感觉了。"," [信任 -1] ");addT(-1);addE("E03");N.marta.M01();}}]);};
+N.marta.shoe=function(){last="shoe";newSeg();narr("门边一双旧鞋，鞋底磨穿，却被缝补得很仔细。");say("鞋{pain:疼}，脚才走不远。\n别笑，这双鞋跟了我三十年。");opts([{label:"“鞋底磨穿了。”",action:function(){newSeg();you("鞋底磨穿了。");say("对。人踩着它走，它替人挨了那么多路。"," [信任 +1] ");addT(1);addE("E04");addN("N_shoe_levinas");N.marta.M01();}},{label:"“那你的脚疼吗？”",action:function(){newSeg();you("那你的脚疼吗？");say("脚累。鞋疼。话要分开说。");addE("E04");N.marta.M01();}},{label:"“旧东西都会疼？”",action:function(){newSeg();you("旧东西都会疼？");say("不。旧不是伤。桌上有只旧壶，好好的，就不疼。");addE("E04");N.marta.M01();}},{label:"“你舍不得扔。”",action:function(){newSeg();you("你舍不得扔。");say("舍不得和疼，是两回事。");addE("E04");addN("N_shoe_sartre");N.marta.M01();}}]);};
+N.marta.pot=function(){last="pot";newSeg();narr("桌上一只旧茶壶，壶身完好，被擦得很亮。壶嘴有一道极细的旧痕，但早已修好。");say("这壶跟了我四十年。它不{pain:疼}。\n它没伤，也还在用。用得好好的。");opts([{label:"“所以旧不是疼的原因。”",action:function(){newSeg();you("所以旧不是疼的原因。");say("旧是旧。伤是伤。"," [信任 +1] ");addT(1);addE("E09");addN("N_pot_witt");N.marta.M01();}},{label:"“它旧了，总会坏。”",action:function(){newSeg();you("它旧了，总会坏。");say("会坏，和已经坏了，是两回事。");addE("E09");addN("N_pot_witt");N.marta.M01();}},{label:"“你舍不得它。”",action:function(){newSeg();you("你舍不得它。");say("舍不得是舍不得。疼是疼。");addE("E09");addN("N_pot_gadamer");N.marta.M01();}}]);};
+N.marta.cup=function(){last="cup";newSeg();narr("一只新陶杯搁在桌角，杯沿有一道细裂。");say("小心那个杯子。新买的，口子裂了。\n它{pain:疼}得很，没人会留意它。");opts([{label:"“可它是新的。”",action:function(){newSeg();you("可它是新的。");say("新的伤口就不是伤口？");addE("E05");addN("N_cup_witt");N.marta.M01();}},{label:"“所以不是旧东西才会疼。”",action:function(){newSeg();you("所以不是旧东西才会疼。");say("你终于肯把话说完整了。"," [信任 +1] ");addT(1);addE("E05");addN("N_cup_witt");N.marta.M01();}},{label:"“它会觉得孤单吗？”",action:function(){newSeg();you("它会觉得孤单吗？");say("孤单是人的话。杯子只是裂了。");addE("E05");addN("N_cup_sartre");N.marta.M01();}},{label:"“扔掉就行。”",action:function(){newSeg();you("扔掉就行。");say("能扔。可扔之前，总该知道它伤在哪儿。"," [信任 -1] ");addT(-1);addE("E05");N.marta.M01();}}]);};
+N.marta.hammer=function(){last="hammer";newSeg();narr("门后挂着一把新铁锤，锤面光亮，没有一道划痕。");say("这把锤子还好好的。\n没用过几回，也没伤。\n它不{pain:疼}。");opts([{label:"“因为它没有裂口。”",action:function(){newSeg();you("因为它没有裂口。");say("没有伤，也就没有疼。");addE("E06");N.marta.M01();}},{label:"“因为它没被人用过。”",action:function(){newSeg();you("因为它没被人用过。");say("用过也不一定疼。用坏了才疼。");addE("E06");N.marta.M01();}},{label:"“因为它没有生命。”",action:function(){newSeg();you("因为它没有生命。");say("椅子也没有。你又绕回去了。");addE("E06");N.marta.M01();}}]);};
+N.marta.M06=function(){last="M06";newSeg();narr("玛尔塔放下手里的布，第一次正面看着你。");say("我问你一件事。\n你说{pain:疼}的时候，那个字在哪里？\n在你膝盖里？在脑子里？还是在你说话的那口气里？");opts([{label:"“在感觉里。我能感觉到它。”",action:function(){newSeg();you("在感觉里。我能感觉到它。");say("那你怎么知道别人也有？\n你只感觉到你自己的。"," [信任 +1] ");addT(1);addE("E10");addN("N_ask_where_witt");setTimeout(N.marta.M06a,400);}},{label:"“在用法里。我说‘疼’，别人知道该做什么。”",action:function(){newSeg();you("在用法里。我说‘疼’，别人知道该做什么。");say("那你和我，也差不多。"," [信任 +2] ");addT(2);addE("E10");addN("N_ask_where_witt");setTimeout(N.marta.M07,400);}},{label:"“在身体里。有神经，有损伤。”",action:function(){newSeg();you("在身体里。有神经，有损伤。");say("墙没有神经。可它有裂缝。\n裂缝和神经，哪个更疼？"," [信任 +1] ");addT(1);addE("E10");addN("N_ask_where_merleau");N.marta.M01();}},{label:"“我不知道。”",action:function(){newSeg();you("我不知道。");say("不知道就说不知道。比乱说强。"," [信任 +2] ");addT(2);addE("E10");addN("N_ask_where_witt");N.marta.M01();}}]);};
+N.marta.M06a=function(){last="M06a";newSeg();narr("玛尔塔没有反驳。她只是继续问。");say("你说你感觉到疼。\n那你怎么知道，你感觉到的那个东西，\n和别人感觉到的，是同一个东西？\n你没法钻进别人身体里去看。");opts([{label:"“我们用的词一样，所以感觉应该一样。”",action:function(){newSeg();you("我们用的词一样，所以感觉应该一样。");say("词一样，感觉就一样？\n那我说‘疼’，你也说‘疼’，\n可我的疼是裂了没人管，你的疼是膝盖肿了。\n同一个词，两回事。"," [信任 +1] ");addT(1);setTimeout(N.marta.M07,500);}},{label:"“不需要知道。我说‘疼’，你递药给我，就够了。”",action:function(){newSeg();you("不需要知道。我说‘疼’，你递药给我，就够了。");say("对。够了。\n你看，你也会说我的话。"," [信任 +2] ");addT(2);setTimeout(N.marta.M07,500);}},{label:"“我可以描述我的感觉，描述得足够细。”",action:function(){newSeg();you("我可以描述我的感觉，描述得足够细。");say("你描述得再细，我听到的还是词。\n我永远只能听到你的词，听不到你的疼。");setTimeout(N.marta.M07,500);}}]);};
+N.marta.M07=function(){last="M07";S.m7=true;newSeg();narr("玛尔塔从抽屉里拿出一个小木盒，摇了摇。里面有东西在轻轻响。");say("假设每个人都有一个盒子，盒子里有一只甲虫。\n谁也不能看别人的盒子，只能看自己的。\n我们都说盒子里的是‘甲虫’。\n可如果每个人盒子里装的东西都不一样呢？\n甚至，如果盒子里什么都没有呢？\n‘甲虫’这个词，还有用吗？");addE("E11");opts([{label:"“有用。用法一致，哪怕内容不同。”",action:function(){newSeg();you("有用。用法一致，哪怕内容不同。");say("你学得很快。\n那墙的‘疼’，和你的‘疼’，\n也可以是两个盒子里的两只甲虫。\n可我们还在用‘疼’这个词。用得好好的。"," [信任 +2] ");addT(2);addN("N_beetle_witt1");setTimeout(N.marta.M08,500);}},{label:"“没用。那这个词就是空的。”",action:function(){newSeg();you("没用。那这个词就是空的。");say("可我们还在用。用得好好的。\n空不空，不影响用。"," [信任 +1] ");addT(1);addN("N_beetle_witt2");setTimeout(N.marta.M08,500);}},{label:"“我的盒子里有甲虫，别人的我不知道。”",action:function(){newSeg();you("我的盒子里有甲虫，别人的我不知道。");say("那你凭什么说别人盒子里也有？");addN("N_beetle_witt2");N.marta.M01();}}]);};
+N.marta.M08=function(){last="M08";newSeg();narr("玛尔塔把盒子收起来。你们一起看着那堵墙。");say("你想过没有——\n如果墙会说话，它第一句会说什么？");opts([{label:"“它会说‘我疼’。”",action:function(){newSeg();you("它会说‘我疼’。");say("那它和你就一样了。可它不会说。\n它只会裂。裂就是它的话。"," [信任 +1] ");addT(1);addN("N_wall_levinas");N.marta.M01();}},{label:"“它会说‘别碰我’。”",action:function(){newSeg();you("它会说‘别碰我’。");say("那是你的话，不是它的话。");N.marta.M01();}},{label:"“它不会说话。它只是墙。”",action:function(){newSeg();you("它不会说话。它只是墙。");say("对。它不说话。可它裂了。\n裂了，就是它在说。\n你听不听，是你的事。"," [信任 +2] ");addT(2);addN("N_wall_witt");N.marta.M01();}}]);};
+N.marta.M05=function(){last="M05";S.m5=true;newSeg();narr("风变大了。墙后传来细小的滴答声。裂缝边缘变深，像正在慢慢张开。");say("听见了吗？\n它这回{pain:疼}得真厉害。\n可我一个人搬不动石灰。");opts([{label:"“先找裂缝源头，再补墙。”",action:function(){newSeg();you("先找裂缝源头，再补墙。");say("对。疼总有伤口。"," [信任 +2] ");addT(2);addE("E07");addE("E08");addN("N_repair_heidegger");N.marta.M01();}},{label:"“先安慰墙。”",action:function(){newSeg();you("先安慰墙。");say("安慰也许有用。但雨不会等。"," [信任 -1] ");addT(-1);addE("E07");addN("N_comfort_witt");N.marta.M01();}},{label:"“墙不会听见你。”",action:function(){newSeg();you("墙不会听见你。");say("我也不是说给墙听。"," [稳定度 -2] ");addS(-2);addE("E07");N.marta.M01();}},{label:"“我去拿石灰。”",action:function(){newSeg();you("我去拿石灰。");say("拿吧。别拿错那袋。");addE("E07");addE("E08");addN("N_repair_witt");N.marta.M01();}}]);};
+N.marta.acc=function(){push(last);newSeg();S.diag="accurate";addS(8);S.trust=3;you("你说‘疼’，不是说墙像人一样受苦。\n你是在说：它裂了、坏了、还在被用，而没有人去照看它。");say("……");narr("她看着你，很久。然后她笑了。那笑很轻，像一块旧布被抖开。");say("你从城里来，倒没把耳朵落在城里。\n来，把石灰递给我。"," [稳定度 +8，信任设为3] ");addN("N_repair_heidegger");opts([{label:"【继续】和玛尔塔一起修墙。",special:true,action:function(){N.marta.After();}}]);diagBtn();};
+N.marta.part=function(){push(last);newSeg();S.diag="partial";addS(3);you("你说‘疼’，是在说东西坏了。");say("差不多。\n可东西坏了，和它疼，不总是一回事。\n你要是只看见坏，修的时候就会下手太重。"," [稳定度 +3] ");narr("（诊断不完整。她似乎还在意：这东西是否仍被使用、是否需要被照料。）");opts([{label:"【就这样离开】\n（触发部分理解结局）",special:true,action:function(){finish("partial");}},{label:"【再想想】回到屋里继续观察。",action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.marta.M01();}}]);diagBtn();};
+N.marta.ani=function(){push(last);newSeg();S.diag="misread";addS(-8);addT(-2);you("你觉得墙也会害怕，也会受苦。");say("我没这么说。\n你们总爱给东西塞进人的话，\n然后再说它们不像人。"," [稳定度 -8，信任 -2] ");narr("屋子里安静下来。之后，玛尔塔开始用她从未用过的说法。");say("门昨晚怕得没合上。\n碗不肯看我。");opts([{label:"【就这样离开】\n（触发泛灵误读结局）",special:true,action:function(){finish("animist");}},{label:"（走到陶杯前）“不是害怕。它只是裂了。”",action:function(){newSeg();you("不是害怕。它只是裂了。");say("……");opts([{label:"“我把你的话听成了我自己的话。”",special:true,action:function(){newSeg();you("我把你的话听成了我自己的话。");say("那就再听一遍。\n别急着给墙添一颗心。\n墙已经够难受了。"," [稳定度 +4] ");addS(4);opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.marta.M01();}}]);}}]);}}]);diagBtn();};
+N.marta.dis=function(){push(last);newSeg();S.diag="misread";addS(-12);S.trust=-3;you("你把墙当人，是因为你已经分不清了。");say("……");say("出去。"," [稳定度 -12，信任 -3] ");narr("她不再看你。屋子变得过分安静，连风都停了。");opts([{label:"【就这样离开】\n（触发贬抑误读结局）",special:true,action:function(){finish("dismissive");}},{label:"（不说话，把旧椅下的布递给她）",action:function(){newSeg();narr("你走到旧椅旁，抽出垫脚的布。没有说话，把布递给她。");say("你不必懂我。\n至少先别替我把话说完。"," [稳定度 +8，信任归零] ");addS(8);S.trust=0;opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.marta.M01();}}]);}}]);diagBtn();};
+N.marta.old=function(){push(last);newSeg();S.diag="partial";addS(-4);you("你觉得所有旧东西都会疼。");say("旧壶放了四十年，也没疼过。\n你看见年头，却没看见伤口。"," [稳定度 -4] ");narr("（旧不是疼。新也可能疼。关键在于损伤，而不是时间。）");opts([{label:"【就这样离开】\n（触发老旧误读结局）",special:true,action:function(){finish("old");}},{label:"【重新诊断】",action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.marta.M01();}}]);diagBtn();};
+N.marta.After=function(){last="After";newSeg();narr("你们一起把石灰搬到墙边。玛尔塔每一步都说‘疼’，而你已经能听懂她在指什么。");say("你看，{pain:疼}不是非得喊出来。\n有些东西只是慢慢坏。\n等有人看见，才知道该怎么补。");narr("你走出门时，回头看了一眼。她蹲在墙边，掌心贴着新补的那块，像在听里面还有没有声音。");narr("门外还在下雨。雨不大，但没停。");opts([{label:"【完成章节】",special:true,action:function(){finish("accurate");}}]);};
+
+/* 汉斯 */
+N.hans.M00=function(){last="M00";newSeg();narr("雨停了三天，井水开始泛油光。村长说水没问题，还让人把井边的告示换了一张新的。告示钉上去的第二天，下游的树叶开始枯。没有人再说水的事。");narr("磨坊里的风带着麦芒的干燥气味。水轮在窗外飞转，汉斯站在磨盘旁边，手里攥着一把面粉。");if(G.cleared.marta){echo("你想起玛尔塔：坏了、还在用、没人管的，才叫疼。");}say("我知道这磨盘今天不对劲。我听到了碎石子的声音。");say("但我没摸过，所以我不‘知道’那石子到底卡在哪里。");opts([{label:"【从水轮开始调查】",special:true,action:function(){N.hans.hot("E01");}},{label:"“你既然听到了，为什么不知道？”",action:function(){newSeg();you("你既然听到了，为什么不知道？");say("听到的是声音，摸到的才是东西。声音能骗人，手不会。"," [信任 +1] ");addT(1);addE("E02");N.hans.M01();}},{label:"“那你直接去摸摸看啊。”",action:function(){newSeg();you("那你直接去摸摸看啊。");say("说得轻巧。万一摸坏了呢？我得先‘确定’它真的坏了。"," [稳定度 -2] ");addS(-2);addE("E02");N.hans.M01();}}]);};
+N.hans.M01=function(){last="M01";newSeg();narr("磨坊里有很多东西值得看看。点中间的任何物件，或者继续和汉斯说话。");var o=[];var obs=[["E01","水轮","wheel"],["E03","面粉袋","flour"],["E04","账本","ledger"],["E05","井水","well"],["E06","助手","helper"]];obs.forEach(function(it){if(S.ev.indexOf(it[0])<0)o.push({label:"【观察】"+it[1],action:function(){N.hans[it[2]]();}});});if(S.ev.filter(function(e){return e!=="E07"&&e!=="E08"&&e!=="E10";}).length>=4&&S.ev.indexOf("E10")<0)o.push({label:"【对话】汉斯放下手里的活，第一次正视你的疑问。",special:true,action:function(){N.hans.M06();}});if(["E01","E02","E03"].every(function(x){return S.ev.indexOf(x)>=0;})&&(S.ev.indexOf("E05")>=0||S.ev.indexOf("E06")>=0)&&!S.m5&&S.ev.indexOf("E10")>=0)o.push({label:"【事件】人们聚集在磨坊门口……",special:true,action:function(){N.hans.M05();}});if(S.diag==="accurate")o.push({label:"【继续】和汉斯一起去检验源头。",special:true,action:function(){N.hans.After();}});if(o.length===0)o.push({label:"（磨坊里只剩下水轮的轰鸣。）",disabled:true});opts(o);diagBtn();};
+N.hans.hot=function(id){var m={E01:"wheel",E03:"flour",E04:"ledger",E05:"well",E06:"helper",E02:"mill"};if(m[id]&&N.hans[m[id]])N.hans[m[id]]();};
+N.hans.wheel=function(){last="wheel";if(S.ev.indexOf("E01")>=0){newSeg();narr("你又看了一会儿水轮。它转得很平稳。");N.hans.M01();return;}newSeg();narr("水轮在飞速旋转。汉斯说：“我知道它没问题，因为今天早上我亲耳听过了。”");say("它转得那么快，如果轴承坏了，我一定能听出来。");opts([{label:"“所以你只用听觉来证明它没问题？”",action:function(){newSeg();you("所以你只用听觉来证明它没问题？");say("听觉不够吗？它转动的声音非常顺滑。"," [信任 +1] ");addT(1);addE("E01");addN("N_water_plato");N.hans.M01();}},{label:"“但如果你听错了呢？”",action:function(){newSeg();you("但如果你听错了呢？");say("听错？我听这声音听了三十年。"," [稳定度 -2] ");addS(-2);addE("E01");addN("N_mill_descartes");N.hans.M01();}}]);};
+N.hans.mill=function(){last="mill";newSeg();narr("磨盘发出刺耳的摩擦声。");say("我听到了，绝对有碎石子，但我还没来得及亲手去掏。");opts([{label:"“所以你还没摸过。”",action:function(){newSeg();you("所以你还没摸过。");say("对。没摸过，就不算知道。"," [信任 +1] ");addT(1);addE("E02");N.hans.M01();}},{label:"“听到就够了。”",action:function(){newSeg();you("听到就够了。");say("不够。声音会骗人。"," [稳定度 -1] ");addS(-1);addE("E02");N.hans.M01();}}]);};
+N.hans.flour=function(){last="flour";newSeg();narr("助手搬来面粉袋。汉斯：“我知道这袋有五十斤，因为我看它装满了。”");say("你看这袋子鼓的，绝对装满了。不用上秤，我一看就知道。");opts([{label:"“可你没上秤称过，怎么知道？”",action:function(){newSeg();you("可你没上秤称过，怎么知道？");say("我看它的大小和重量对比，没问题的。"," [信任 +1] ");addT(1);addE("E03");addN("N_flour_witt");N.hans.M01();}},{label:"“你信助手吗？”",action:function(){newSeg();you("你信助手吗？");say("我不信他。我只信我自己看到的重量。"," [稳定度 -2] ");addS(-2);addE("E03");N.hans.M01();}},{label:"（拿起账本核对）",action:function(){newSeg();narr("你翻看了一下账本。账本上写着这袋是四十五斤。");say("那是助手写错了。我看的是实物，四十五就是五十。"," [信任 -1] ");addT(-1);addE("E03");N.hans.M01();}}]);};
+N.hans.ledger=function(){last="ledger";newSeg();narr("账本上写着“收入三桶麦子”。汉斯：“我知道没算错，这是助手报给我的数。”");say("助手说多少就是多少。我签了字，就算是确认了。");opts([{label:"“你既然没算过，怎么算知道？”",action:function(){newSeg();you("你既然没算过，怎么算知道？");say("他是我助手，他量过就等同我量过。"," [信任 -1] ");addT(-1);addE("E04");addN("N_ledger_gettier");N.hans.M01();}},{label:"“那你自己去数一遍。”",action:function(){newSeg();you("那你自己去数一遍。");say("你倒是提醒我了，我该去库房看看。");addE("E04");N.hans.M01();}},{label:"“万一助手在骗你呢？”",action:function(){newSeg();you("万一助手在骗你呢？");say("他敢？借他十个胆子。"," [信任 +1] ");addT(1);addE("E04");addN("N_ledger_anscombe");N.hans.M01();}}]);};
+N.hans.well=function(){last="well";newSeg();narr("井水很清澈。汉斯：“我知道这水能喝，我天天看它，它没变过色。”");say("你看这水，清亮得很。我在这打了三十年水，从来没见过它出问题。");if(G.notes.hans.indexOf("N_hans_echo_marta")<0&&G.notes.marta.indexOf("N_wall_heidegger")>=0){addN("N_hans_echo_marta");echo("你想起玛尔塔：一堵墙的裂缝，和一口井的油光，都在发出同一种要求——被看见。");}opts([{label:"“可有人说下游的树叶枯萎了。”",action:function(){newSeg();you("可有人说下游的树叶枯萎了。");say("那是听说的。我只相信我这双眼睛看到的井水。"," [信任 -1] ");addT(-1);addE("E05");addN("N_water_moore");N.hans.M01();}},{label:"“你测过水质吗？”",action:function(){newSeg();you("你测过水质吗？");say("水质？水就是水，还用测？"," [稳定度 -2] ");addS(-2);addE("E05");N.hans.M01();}},{label:"“如果水面没变色，但水里有毒呢？”",action:function(){newSeg();you("如果水面没变色，但水里有毒呢？");say("这……我只相信我看到的。"," [信任 +1] ");addT(1);addE("E05");addN("N_water_quine");narr("他说“我天天看它”的时候，眼睛没有看井。他看着井边的石沿。石沿上有一道旧刻痕，像有人用指甲划的。");say("我师父那年也说过这话。他说水没问题。后来井水出了问题，师父走了。");narr("他把井绳收上来，一圈一圈绕在手上。");N.hans.M01();}}]);};
+N.hans.helper=function(){last="helper";newSeg();narr("助手正在推卸责任：“我听说村长说水有问题。”汉斯：“你‘知道’个屁！你连井边都没去过。”");say("他说他‘知道’？他连现场都没到过，他连水都没摸过，他凭什么说知道！");opts([{label:"“所以在你这里，‘知道’必须亲自在场？”",action:function(){newSeg();you("所以在你这里，‘知道’必须亲自在场？");say("废话。没亲手摸过，没亲眼看见，那叫‘听说’。"," [信任 +2] ");addT(2);addE("E06");addN("N_helper_witt");N.hans.M01();}},{label:"“你是在生气，还是真的在讲道理？”",action:function(){newSeg();you("你是在生气，还是真的在讲道理？");say("我是在讲道理。但我没办法不生气。"," [信任 +1] ");addT(1);addE("E06");N.hans.M01();}},{label:"“也许他听到的也是一种‘确证’。”",action:function(){newSeg();you("也许他听到的也是一种‘确证’。");say("我没否认。但我只信我自己验证过的确证。"," [稳定度 -1] ");addS(-1);addE("E06");addN("N_helper_freud");N.hans.M01();}}]);};
+N.hans.M06=function(){last="M06";newSeg();narr("汉斯放下手里的活，第一次正面看着你。");say("我问你一件事。\n如果你听到别人说“水有问题”，你没亲眼见过。你算‘知道’吗？");opts([{label:"“不算。那只是听说。”",action:function(){newSeg();you("不算。那只是听说。");say("你看，你也是这么想的。那你为什么觉得我偏执？"," [信任 +2] ");addT(2);addE("E10");addN("N_water_plato");setTimeout(N.hans.M06a,400);}},{label:"“算。如果他是个诚实的人，我就知道。”",action:function(){newSeg();you("算。如果他是个诚实的人，我就知道。");say("所以你信人，我信我的手。我们不一样。"," [信任 +1] ");addT(1);addE("E10");setTimeout(N.hans.M06a,400);}}]);};
+N.hans.M06a=function(){last="M06a";newSeg();say("你知道问题在哪吗？我信我的眼睛，但我这辈子只信自己的眼睛。可是现在，没人信我的眼睛了。");opts([{label:"“你要向人们证明，而不是自己确认。”",action:function(){newSeg();you("你要向人们证明，而不是自己确认。");say("证明？怎么证明？把我看到的告诉他们？"," [信任 +2] ");addT(2);setTimeout(N.hans.M05,500);}},{label:"“也许你该试着信任别人一次。”",action:function(){newSeg();you("也许你该试着信任别人一次。");say("信任？信任能当饭吃吗？"," [信任 +1] ");addT(1);setTimeout(N.hans.M05,500);}}]);};
+N.hans.M05=function(){last="M05";S.m5=true;newSeg();narr("人们聚集在磨坊门口，要求汉斯给出确凿证据，证明水源没问题。");say("你们要证据？我亲眼看到的还不算证据吗？");opts([{label:"“你亲自去测试水质，拿数据给他们看。”",action:function(){newSeg();you("你亲自去测试水质，拿数据给他们看。");say("我去……我亲自去。"," [信任 +2] ");addT(2);addE("E07");addE("E08");addN("N_test_witt");N.hans.M01();}},{label:"“你告诉他们你看到的水很清澈。”",action:function(){newSeg();you("你告诉他们你看到的水很清澈。");say("没用，他们不信我的眼睛了。"," [稳定度 -2] ");addS(-2);addE("E07");N.hans.M01();}}]);};
+N.hans.acc=function(){push(last);newSeg();S.diag="accurate";addS(8);S.trust=3;you("你说‘知道’，并不是说‘我听见了’或者‘我猜到了’。\n你是在说：‘我亲手验证过了，这是我的确证。’");say("……");narr("汉斯沉默了很久，看着自己的双手。");say("对。我的手验证过的，我才认。别的东西，我只是听着。"," [稳定度 +8，信任设为3] ");addN("N_test_witt");opts([{label:"【继续】和汉斯一起去修水轮。",special:true,action:function(){N.hans.After();}}]);diagBtn();};
+N.hans.pow=function(){push(last);newSeg();S.diag="misread";addS(-8);addT(-2);you("你只是用‘知道’这个词来显示你比助手和人们更权威。");say("权威？我要是只想显示权威，我早就随便编个故事骗他们了！"," [稳定度 -8，信任 -2] ");opts([{label:"【就这样离开】\n（触发权力误读结局）",special:true,action:function(){finish("power");}},{label:"（把账本递给他）“那就用账本和行动证明。”",action:function(){newSeg();you("那就用账本和行动证明。");say("我……我这就去对账。"," [稳定度 +4] ");addS(4);opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.hans.M01();}}]);}}]);diagBtn();};
+N.hans.pas=function(){push(last);newSeg();S.diag="misread";addS(-12);S.trust=-3;you("你只是一个懒汉，只会等待别人给你结论。");say("我懒？我在磨坊干了三十年，你竟然说我懒？滚出去！"," [稳定度 -12，信任 -3] ");opts([{label:"【就这样离开】\n（触发被动误读结局）",special:true,action:function(){finish("passive");}},{label:"（站在门外不离开，等他冷静下来）",action:function(){newSeg();narr("你在门外站了很久，直到里面重新响起了磨盘的声音。");say("……你还在？进来吧。刚才是我太激动了。"," [稳定度 +8] ");addS(8);S.trust=0;opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.hans.M01();}}]);}}]);diagBtn();};
+N.hans.abs=function(){push(last);newSeg();S.diag="misread";addS(-10);you("你对‘知道’的要求太高了。你要的那种绝对真理，只有数学里才有。生活里没有。");say("可如果连自己亲眼看见、亲耳听到的都不算绝对真理……那我这三十年的磨坊，算什么？算幻觉吗？"," [稳定度 -10] ");opts([{label:"【就这样离开】\n（触发绝对真理误读结局）",special:true,action:function(){finish("absolute");}},{label:"“算生活。生活不需要绝对真理。”",action:function(){newSeg();you("算生活。生活不需要绝对真理。");say("生活……"," [稳定度 +4] ");addS(4);opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.hans.M01();}}]);}}]);diagBtn();};
+N.hans.ske=function(){push(last);newSeg();S.diag="misread";addS(-10);you("你开始怀疑一切。你连自己的眼睛和耳朵都不信了。那这磨坊里的一切，还有什么意义？");narr("汉斯呆立在原地，他的手在发抖。他试图去摸水轮，但又缩了回来。");say("如果连摸到的东西都可能是假的……那我知道个屁。"," [稳定度 -10] ");opts([{label:"【就这样离开】\n（触发彻底怀疑论结局）",special:true,action:function(){finish("skeptic");}},{label:"“不，你的手是真的，你的磨坊是真的。”",action:function(){newSeg();you("不，你的手是真的，你的磨坊是真的。");say("真的吗……"," [稳定度 +4] ");addS(4);opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.hans.M01();}}]);}}]);diagBtn();};
+N.hans.After=function(){last="After";newSeg();narr("汉斯亲自检查了水轮和磨盘，并把账本核对了一遍。他重新找回了‘知道’的定义。");say("你看，如果不去摸，不去看，不去算，我怎么可能知道这水轮到底怎么了。");narr("你走出磨坊时，水轮还在转。他站在磨盘旁边，手放在石面上，没有动。");narr("下游的树叶还在枯。井边的告示换了一张新的，没有人看。");opts([{label:"【完成章节】",special:true,action:function(){finish("accurate");}}]);};
+
+/* 尤尔根 */
+N.jurgen.M00=function(){last="M00";newSeg();narr("村长把修墙的图纸又钉到了铁匠铺。铁匠没有把图纸揭下来。他在图纸边上用炭笔写了两个字。从那天起，来铁匠铺的人少了一半。");narr("铁匠铺里热浪逼人。炉膛里的火舌舔着风箱口，火星子往上蹿，撞到房梁又落下来，像一场倒着下的雨。");narr("空气里是焦炭、铁锈和汗混在一起的味道。你站在门口，鞋底很快就烫了。");narr("尤尔根赤着上身，背上的肌肉随着锤子起落一鼓一鼓。他砸的不是什么规整的坯子，就是一块没有形状的铁。每砸五下，手腕转一个角度。");narr("墙上钉着一张图纸，盖着村长的印章，三长两短标得清清楚楚。图纸边角被人用炭笔写了两个大字：放屁。");if(G.cleared.hans){echo("你想起汉斯：只有亲手摸过的，才算是知道。尤尔根每砸五下换一次角度，也是同一种东西。");}say("又来了一个说教的。");say("村长让你来的？回去告诉他，他那破图纸打出来的东西，连柴都劈不动。");narr("他吐了口唾沫在铁砧边上，唾沫星子瞬间就干了。");opts([{label:"【观察】墙上的图纸",special:true,action:function(){N.jurgen.hot("E01");}},{label:"【观察】满地的废铁",special:true,action:function(){N.jurgen.hot("E02");}},{label:"【观察】熔炉边的酒壶",special:true,action:function(){N.jurgen.hot("E06");}},{label:"“我想看看你怎么打铁。”",action:function(){newSeg();you("我想看看你怎么打铁。");narr("他手上的锤子顿了顿，抬眼看你，像在掂量这句话的重量。");say("看？光看有什么用。");narr("他把锤子往你脚边一踢——没真踢到你，停在半尺外。");say("你行你上。打不出比这更好的，就闭嘴看我打。"," [信任 +1] ");addT(1);addE("E05");N.jurgen.M01();}},{label:"“村长的图纸是标准，你为什么不遵守？”",action:function(){newSeg();you("村长的图纸是标准，你为什么不遵守？");narr("锤子砸下去，铁砧嗡的一声长鸣。他慢慢转过头。");say("标准？");say("那是死人的规矩。活人得用活人的法子。"," [稳定度 -2] ");addS(-2);addE("E01");N.jurgen.M01();}},{label:"“你打出来的东西确实不一样。”",action:function(){newSeg();you("你打出来的东西确实不一样。");narr("他咧嘴笑了一下，牙上沾着煤灰。");say("不一样，还是不对？");narr("他等你回答，锤子悬在半空。");say("这俩词可差得远。"," [信任 +1] ");addT(1);addE("E02");N.jurgen.M01();}}]);};
+N.jurgen.M01=function(){last="M01";newSeg();narr("铁匠铺里一片狼藉，也一片安静，只有炉火的噼啪声。你可以四处走动，看看那些散落的东西，或者继续跟他说话。");narr("尤尔根不催你。他回到铁砧前，又开始砸那块铁，五下，换角度，五下，换角度。");var o=[];var obs=[["E01","墙上的图纸","blue"],["E02","满地的废铁","scrap"],["E03","他的铁锤","hammer"],["E04","半成品的剑","half"],["E05","尤尔根的挑衅","taunt"],["E06","熔炉边的酒壶","jug"],["E07","墙角的涂鸦","graf"]];obs.forEach(function(it){if(S.ev.indexOf(it[0])<0)o.push({label:"【观察】"+it[1],action:function(){N.jurgen[it[2]]();}});});var c=S.ev.filter(function(e){return ["E01","E02","E03","E04","E06","E07"].indexOf(e)>=0;}).length;if(S.ev.indexOf("E05")>=0&&c>=2&&!S.done){S.done=true;o=[];o.push({label:"【对话】尤尔根放下铁锤，死死盯着你。",special:true,action:function(){N.jurgen.M02();}});}if(o.length===0)o.push({label:"（尤尔根看着你，等你说话。）",disabled:true});opts(o);diagBtn();};
+N.jurgen.hot=function(id){var m={E01:"blue",E02:"scrap",E03:"hammer",E04:"half",E05:"taunt",E06:"jug",E07:"graf"};if(m[id])N.jurgen[m[id]]();};
+N.jurgen.blue=function(){last="blue";newSeg();narr("你凑近图纸。纸是村子里少见的厚牛皮纸，边角被火燎得发脆。三长两短的尺寸标得一丝不苟，落款是村长的印章。");narr("旁边那行炭笔字却写得很用力：“放屁”。你几乎能想象他写这两个字时的表情。");say("村长定的规矩。三长两短。");narr("他学了一遍村长的腔调，学得惟妙惟肖，然后自己先笑了。");say("放他娘的屁。");opts([{label:"“那你觉得应该怎么打？”",action:function(){newSeg();you("那你觉得应该怎么打？");narr("他用锤子指了指炉子，又指了指自己的手。");say("我觉得？看铁，看火，看手感。铁告诉你它想成什么样。"," [信任 +1] ");addT(1);addE("E01");addN("N_rule_witt");N.jurgen.M01();}},{label:"“这是村子里传下来的经验。”",action:function(){newSeg();you("这是村子里传下来的经验。");narr("他哼了一声，把锤子往铁砧上一搁。");say("经验？这是村长的私心。他想怎么打就怎么打，还非说是祖宗传下来的。"," [稳定度 -2] ");addS(-2);addE("E01");addN("N_power_foucault");addN("N_ostensive");N.jurgen.M01();}},{label:"“规矩就是用来打破的。”",action:function(){newSeg();you("规矩就是用来打破的。");narr("他盯着你看了两秒，忽然笑了，笑得不太友善。");say("打破？你是来砸场子的，还是来说教的？"," [稳定度 -1] ");addS(-1);addE("E01");N.jurgen.M01();}}]);};
+N.jurgen.scrap=function(){last="scrap";newSeg();narr("你蹲下去翻那堆废铁。断剑、残刀、半截枪头，形状一个比一个怪。");narr("可你随手捡起一把，刃口在火光里泛着冷白——你下意识用拇指蹭了一下，指腹立刻见了血。");narr("尤尔根在背后看着，没出声。");say("都是废品。没人要。");narr("他顿了顿。");say("不过它们能砍断村长那些破铜烂铁。");opts([{label:"“它们的形状不一样，但都很锋利。”",action:function(){newSeg();you("它们的形状不一样，但都很锋利。");narr("他把锤子换到左手，右手在裤子上蹭了蹭。");say("你懂个屁。这叫手感。"," [信任 +1] ");addT(1);addE("E02");addN("N_power_foucault");addN("N_family");N.jurgen.M01();}},{label:"“不合标准的，就是废铁。”",action:function(){newSeg();you("不合标准的，就是废铁。");narr("他脸上的笑一下子没了。");say("那你滚去用村长的废铁吧。"," [稳定度 -2] ");addS(-2);addE("E02");N.jurgen.M01();}},{label:"“既然都是废铁，那还有什么意义？”",action:function(){newSeg();you("既然都是废铁，那还有什么意义？");narr("他把锤子往地上一杵，火星从砧面上溅起来。");say("意义？意义能当饭吃？"," [稳定度 -2] ");addS(-2);addE("E02");addN("N_nihilism_heidegger");N.jurgen.M01();}}]);};
+N.jurgen.hammer=function(){last="hammer";newSeg();narr("锤子靠在铁砧边。你伸手想拿，又缩回来——它比看上去沉得多。");narr("手柄被手汗浸成深褐色，五道划痕平行排列，深浅不一，最中间那道几乎刻穿了木头。");say("看什么呢。");narr("他走过来，把锤子拿在手里，很自然地掂了掂。");say("五下。我每打五下，就得换口气，换个角度。");say("这是我给自己定的。");if(G.notes.jurgen.indexOf("N_jurgen_echo_hans")<0&&G.notes.hans.indexOf("N_test_witt")>=0){addN("N_jurgen_echo_hans");echo("你想起汉斯：只有亲手摸过的，才算是知道。尤尔根的五下换角度，也是同一种东西。");}opts([{label:"“这是你自己给自己定的规矩？”",action:function(){newSeg();you("这是你自己给自己定的规矩？");narr("他看了你一会儿，眼神软了一点。");say("对。不然铁就死了。"," [信任 +2] ");addT(2);addE("E03");addN("N_practice_marx");addN("N_habitus");narr("你看着那五道划痕。深浅不一，最中间那道几乎刻穿了木头。");say("这五道，不是刻的。是烫的。");narr("他把锤柄翻了个面，不让你看。");say("那天铁匠铺着火，我师父没出来。我抓锤柄的时候，锤柄还是烫的。");N.jurgen.M01();}},{label:"“这不过是习惯而已。”",action:function(){newSeg();you("这不过是习惯而已。");narr("他摇头，摇得很慢。");say("习惯？没这个习惯，打出来的东西就废了。废铁你负责？"," [稳定度 -1] ");addS(-1);addE("E03");N.jurgen.M01();}},{label:"“你在炫耀你的辛苦。”",action:function(){newSeg();you("你在炫耀你的辛苦。");narr("他把锤子往肩上一扛，冷笑。");say("辛苦？辛苦不值钱。手底下见真章。"," [稳定度 -1] ");addS(-1);addE("E03");N.jurgen.M01();}}]);};
+N.jurgen.half=function(){last="half";newSeg();narr("铁砧上横着一把打了一半的剑。剑身的弧度很怪，既不是直的，也不是弯的，像被人从中间拗了一下。");narr("你伸手比了比，它的重心落在一个说不出的位置。");say("这剑的规矩变了。");narr("他走过来，把剑拿起来对着火光看，眼睛眯成一条缝。");say("刚才还是三长两短，现在得改成四长一短。");if(G.notes.jurgen.indexOf("N_jurgen_echo_marta")<0&&G.notes.marta.indexOf("N_repair_heidegger")>=0){addN("N_jurgen_echo_marta");echo("你想起玛尔塔：坏的、还在用的、没人管的，才叫疼。这把半成品剑，也是“坏了、还在用、没人管”的东西。");}opts([{label:"“规矩不是固定的？”",action:function(){newSeg();you("规矩不是固定的？");narr("他把剑放回去，动作很轻，像放一件还没定下来的事。");say("铁在变，人也在变。规矩当然得变。"," [信任 +1] ");addT(1);addE("E04");addN("N_rule_witt");N.jurgen.M01();}},{label:"“你在找借口。”",action:function(){newSeg();you("你在找借口。");narr("他猛地回头，锤子在手里攥紧了，又慢慢松开。");say("你懂个屁。"," [稳定度 -2] ");addS(-2);addE("E04");N.jurgen.M01();}},{label:"“那到底哪一套才算数？”",action:function(){newSeg();you("那到底哪一套才算数？");narr("他愣了一下，好像这问题戳到了什么。");say("哪套算数……得看这把剑最后想成什么样。"," [信任 +1] ");addT(1);addE("E04");addN("N_silence_witt");N.jurgen.M01();}}]);};
+N.jurgen.taunt=function(){last="taunt";newSeg();narr("他把手里那把巨大的铁锤踢到你脚下，锤头砸在地上，闷响一声，震得你脚心发麻。");narr("他抱着胳膊看你，炉火在他背后，把他的轮廓烧成一团黑影。");say("你行你上。");say("打不出比这更好的，就闭嘴看我打。");opts([{label:"（弯腰握住铁锤）“我试试。”",action:function(){newSeg();narr("你弯下腰，握住了那把沉甸甸的铁锤。锤柄还是温的。");narr("尤尔根愣了一下，随即嘴角咧开，露出一口沾着煤灰的牙。");say("你……还真敢。"," [信任 +2] ");addT(2);addE("E05");addN("N_shared_witt");N.jurgen.M01();}},{label:"“我不是来打铁的。”",action:function(){newSeg();you("我不是来打铁的。");narr("他撇了撇嘴，弯腰把锤子捡回去，动作里带着点失望。");say("那你来干嘛？看我笑话？"," [稳定度 -1] ");addS(-1);addE("E05");N.jurgen.M01();}},{label:"“打铁有什么意义？”",action:function(){newSeg();you("打铁有什么意义？");narr("他直起身，看了你很久，眼神里的火慢慢暗下去。");say("没意义。你走吧。"," [稳定度 -3] ");addS(-3);addE("E05");N.jurgen.M01();}}]);};
+N.jurgen.jug=function(){last="jug";newSeg();narr("熔炉边搁着一只锡酒壶。壶身熏得发黑，摸上去还温着。");narr("你翻过来看壶底，歪歪扭扭刻着两个字：“给汉斯”。");narr("可你记得，磨坊主汉斯滴酒不沾。这在村子里不是秘密。");say("别看了。");narr("他走过来，不动声色地把壶翻了个面，刻字那面朝里。");say("我欠他的。");opts([{label:"“汉斯不喝酒，你知道。”",action:function(){newSeg();you("汉斯不喝酒，你知道。");narr("他没否认，只是看着炉火。");say("知道。可我打了一把好刀给他，他没用。刀还在我这儿。"," [信任 +1] ");addT(1);addE("E06");addN("N_form_life");addN("N_forms_life_plural");N.jurgen.M01();}},{label:"“他是不是欠你钱？”",action:function(){newSeg();you("他是不是欠你钱？");narr("他笑了，笑得有点苦。");say("钱？钱能算清。有些账算不清。"," [稳定度 -1] ");addS(-1);addE("E06");N.jurgen.M01();}},{label:"“你俩之间有矛盾。”",action:function(){newSeg();you("你俩之间有矛盾。");narr("他把酒壶往炉子边一推，壶底在铁皮上刮出一声刺耳的响。");say("矛盾。你们城里人真会说词儿。"," [稳定度 -1] ");addS(-1);addE("E06");N.jurgen.M01();}}]);};
+N.jurgen.graf=function(){last="graf";newSeg();narr("墙角有一片炭笔涂鸦，笔迹稚嫩，是孩子画的。");narr("一个赤膊的铁匠，举着一把没有形状的剑。剑旁边歪歪扭扭写了两个字：“真的”。");narr("你看的时候，尤尔根顺着你的目光望过去，喉结动了一下，没说话。");say("莉娜画的。");narr("过了很久他才开口。");say("她说这剑是真的。我说它还没打完呢。她说没打完也是真的。");opts([{label:"“她说的‘真的’，跟我们说的不一样。”",action:function(){newSeg();you("她说的‘真的’，跟我们说的不一样。");narr("他转过头看你，眼神里有点意外。");say("……你听出来了？"," [信任 +2] ");addT(2);addE("E07");addN("N_form_life");narr("你看着涂鸦里那个铁匠。铁匠举着一把没有形状的剑，剑旁边写着“真的”。");say("我师父也会画。他画得比莉娜好。");narr("他低头，用脚尖蹭了蹭地上的煤灰。");say("他走的那天，这剑还没打完。");N.jurgen.M01();}},{label:"“小孩子不懂事，别当真。”",action:function(){newSeg();you("小孩子不懂事，别当真。");narr("他脸色沉下来，弯腰把涂鸦用脚蹭掉了一角，又停住，把手收回去。");say("她比你懂。"," [稳定度 -2] ");addS(-2);addE("E07");N.jurgen.M01();}},{label:"“你信她的话？”",action:function(){newSeg();you("你信她的话？");narr("他看着那两个字，看了很久。");say("我不知道。可她说的时候，我手里的铁好像真有点不一样。"," [信任 +1] ");addT(1);addE("E07");N.jurgen.M01();}}]);};
+N.jurgen.M02=function(){last="M02";newSeg();narr("尤尔根放下铁锤，死死盯着你。炉火把他的脸劈成明暗两半，煤灰和旧疤在光里显得更深。");say("村长的图纸，全村人都在用。");narr("他从废铁堆里翻出两把剑，一把扔在你面前，一把握在自己手里。扔给你的那把，尺寸规整，三长两短，分毫不差；他手里那把，弧度古怪，刃口却白得发亮。");say("这把，按图纸打的。你试试。");narr("你握住那把规整的剑，往铁砧上一磕——剑身从中间断成两截，断口发灰。");say("这把，我打的。");narr("他把手里那把递给你。你随手一挥，铁砧边上那根铁条应声而断。");say("你觉得为什么？");opts([{label:"“因为图纸是强加的，大家并不真的懂。”",action:function(){newSeg();you("因为图纸是强加的，大家并不真的懂。");narr("他慢慢点头，点得很重。");say("对。他们只是照猫画虎。画得像，可不知道为什么要这样画。"," [信任 +2] ");addT(2);addE("E08");addN("N_power_foucault");addN("N_ostensive");setTimeout(N.jurgen.M03,400);}},{label:"“因为他们没按规矩来。”",action:function(){newSeg();you("因为他们没按规矩来。");narr("他冷笑一声，把手里的剑往废铁堆里一插。");say("规矩？屁的规矩！那是村长的规矩，不是我们的！"," [稳定度 -2] ");addS(-2);addE("E08");setTimeout(N.jurgen.M03,400);}},{label:"“因为你的规矩才是对的。”",action:function(){newSeg();you("因为你的规矩才是对的。");narr("他摇头，摇得很坚决。");say("我的规矩，只有我自己能守。别人学不来。"," [信任 +1] ");addT(1);addE("E08");addN("N_private_kripke");setTimeout(N.jurgen.M03,400);}}]);};
+N.jurgen.M03=function(){last="M03";newSeg();narr("尤尔根把手伸到你面前。那是一只你不该在四十岁的人身上看到的手——指节粗大，掌心老茧叠着老茧，几道旧伤横着穿过。");say("你看我这手。");narr("他用拇指按了按掌心一块最厚的茧，像在按一块石头。");say("这茧子不是一天磨出来的。");say("规矩也是。");opts([{label:"“所以你的规矩，是一锤一锤砸出来的。”",action:function(){newSeg();you("所以你的规矩，是一锤一锤砸出来的。");narr("他把手收回去，握了握拳，又松开。");say("对。是身体记住的。不是写在纸上的。"," [信任 +2] ");addT(2);addE("E04");addN("N_body_merleau");setTimeout(N.jurgen.M04,400);}},{label:"“这不过是受罪罢了。”",action:function(){newSeg();you("这不过是受罪罢了。");narr("他把手猛地收回去，像被烫了一下。");say("受罪？你懂个屁。这是手艺。受罪的人多了，有几个能打出好剑？"," [稳定度 -2] ");addS(-2);addE("E04");setTimeout(N.jurgen.M04,400);}},{label:"“如果不用这样受苦，你还会守规矩吗？”",action:function(){newSeg();you("如果不用这样受苦，你还会守规矩吗？");narr("他想了想，想得很久。");say("不知道。也许不会。可我没得选。"," [信任 +1] ");addT(1);addE("E04");addN("N_practice_marx");addN("N_habitus");setTimeout(N.jurgen.M04,400);}}]);};
+N.jurgen.M04=function(){last="M04";newSeg();narr("他捡起那把半成品的剑，重新放到铁砧上。火星在剑身上跳，像一群不肯落地的虫子。");say("现在，这剑的规矩是四长一短。");narr("他把锤子递到你手里，这次是认真地递，双手。");say("你打给我看。");opts([{label:"（按他的节奏，五下，换角度）",action:function(){newSeg();narr("你握紧锤子，心里默数：一下、两下、三下、四下、五下——手腕转了个角度，再砸。火星四溅。");narr("铁砧发出一声清亮的长鸣，剑身微微颤了一下，像是应了你。");narr("尤尔根盯着那把剑，喉结动了一下。");say("你……真打了。还打对了。"," [信任 +3] ");addT(3);addE("E05");addN("N_shared_witt");addN("N_body_merleau");setTimeout(N.jurgen.M04b,500);}},{label:"（用力猛砸三下，图快）",action:function(){newSeg();narr("你抡起锤子猛砸三下，火星炸开，剑身却发出一声沉闷的呜咽，弯了一个难看的角度。");narr("尤尔根伸手按住你的手腕。");say("停。铁在喊疼呢。"," [稳定度 -2] ");addS(-2);addN("N_silence_witt");setTimeout(N.jurgen.M04b,500);}},{label:"“我不会打铁。”",action:function(){newSeg();you("我不会打铁。");narr("他盯着你看了两秒，把锤子收回去，没嘲笑，也没说话。");say("那你就看着。看也是一种活儿。"," [稳定度 -1] ");addS(-1);setTimeout(N.jurgen.M04b,500);}},{label:"“你必须按村长的规矩打。”",action:function(){newSeg();you("你必须按村长的规矩打。");narr("他脸上的光一下子灭了。");say("那你就等着收废铁吧。"," [稳定度 -3] ");addS(-3);addE("E07");setTimeout(N.jurgen.M04b,500);}}]);};
+N.jurgen.M04b=function(){last="M04b";newSeg();narr("炉火渐渐低下去，铁匠铺里暗了一截。尤尔根靠着铁砧坐下，从炉边摸出那只锡酒壶，拔开塞子闻了闻，又塞回去。");say("你知道我为啥每五下换一次角度吗。");narr("他没等你回答。");say("铁烧到某个火候，就会软，也会犟。五下是一个火候。第五下之后，它要是不肯顺着来，我就得换个方向问它。");say("这不是我定的。是铁定的。我只是听。");opts([{label:"“所以你是在听铁说话。”",action:function(){newSeg();you("所以你是在听铁说话。");narr("他把酒壶放下，笑了，这回笑得不苦。");say("差不多。铁有铁的脾气。你得先听，才能说。"," [信任 +2] ");addT(2);addN("N_rule_witt");addN("N_silence_witt");setTimeout(N.jurgen.M05,500);}},{label:"“那图纸上为什么没写这些？”",action:function(){newSeg();you("那图纸上为什么没写这些？");narr("他往炉子里啐了一口，火苗窜了一下。");say("写图纸的人没打过铁。他只会画。"," [信任 +1] ");addT(1);addN("N_power_foucault");addN("N_ostensive");setTimeout(N.jurgen.M05,500);}},{label:"“你在故弄玄虚。”",action:function(){newSeg();you("你在故弄玄虚。");narr("他看了你一眼，不再说了，低头去拨炉子里的炭。");say("行。你说什么就是什么。"," [稳定度 -1] ");addS(-1);setTimeout(N.jurgen.M05,500);}}]);};
+N.jurgen.M05=function(){last="M05";S.m5=true;newSeg();narr("铁匠铺的门被粗暴地踹开。冷风灌进来，炉火猛地一歪。");narr("人们愤怒地冲进屋子，把几把断剑和折损的武器扔在地上，铁器相撞，声音刺耳。");narr("村长带着两个护卫走进来，脸上像挂了一层霜。");narr("一个人捡起断剑，指着尤尔根的鼻子。");narr("那人喊道：“你的规矩连狗屎都不如！这东西一砍就断！”");say("他们自己不会用，还怪我的剑有问题。");narr("尤尔根站着没动，声音不高。");say("规矩是死的，力气是活的。");narr("村长开口了：“从今天起，你必须严格按图纸打。否则，滚出村子。”");opts([{label:"“村长，让我来和尤尔根一起想办法。”",action:function(){newSeg();you("村长，让我来和尤尔根一起想办法。");narr("村长皱眉看你，人们也安静了一瞬。");narr("尤尔根侧过头，第一次用正眼看你，像重新掂量你这个人。");say("你？你算什么？"," [信任 +2] ");addT(2);addE("E07");addE("E08");addN("N_shared_witt");N.jurgen.M01();}},{label:"“尤尔根，你按图纸打一次试试。”",action:function(){newSeg();you("尤尔根，你按图纸打一次试试。");narr("他盯着你，眼神一点一点冷下去。");say("好。我打。"," [稳定度 -4] ");addS(-4);addE("E07");N.jurgen.M01();}},{label:"“规矩本来就可以灵活变通，大家自己看着办吧。”",action:function(){newSeg();you("规矩本来就可以灵活变通，大家自己看着办吧。");narr("人们哗然。村长脸色更难看了。尤尔根却笑了一声，笑得有点凉。");say("好。那就各打各的。"," [稳定度 -3] ");addS(-3);addE("E07");N.jurgen.M01();}},{label:"“村长，规矩毫无意义。全砸了吧。”",action:function(){newSeg();you("村长，规矩毫无意义。全砸了吧。");narr("满屋子的人都愣住了。尤尔根慢慢转过头看你，像在看一个陌生人。");say("你说什么？"," [稳定度 -6] ");addS(-6);addE("E07");N.jurgen.M01();}}]);};
+N.jurgen.acc=function(){push(last);newSeg();S.diag="accurate";addS(8);S.trust=3;you("你说‘规矩’，不是说写在纸上的教条。\n你是在说：‘咱们一起这么干’。");narr("铁匠铺里安静下来，只有炉火还在响。");narr("尤尔根沉默了很久。他弯腰捡起那把被他扔在地上的半成品剑，用拇指沿着剑身摸了一遍。");narr("然后他把铁锤递给你——双手递的。");say("对。咱们一起这么干。"," [稳定度 +8，信任设为3] ");addN("N_shared_witt");narr("他扯下墙上的图纸，团成一团，扔进炉子。纸边卷起来，炭笔字在火里亮了一下，然后没了。");opts([{label:"【继续】和尤尔根一起重铸铁匠铺的规矩。",special:true,action:function(){N.jurgen.After();}}]);diagBtn();};
+N.jurgen.rul=function(){push(last);newSeg();S.diag="misread";addS(-10);addN("N_tech_repro");you("你必须按图纸来。这是村长的命令。");narr("尤尔根没有争辩。他弯腰捡起图纸，用袖子把上面的炭笔字擦掉，擦得很用力，纸都磨破了。");say("好。我按。我全按。"," [稳定度 -10] ");narr("那天下午，他按图纸打了十二把剑，每一把都规整，每一把都一模一样。");narr("第二天，第一个人拿着这些剑去砍柴，剑刃像脆饼一样折断。有人受了伤。");narr("尤尔根还在打，五下，不换角度了。他打铁的样子像一台机器。");opts([{label:"【就这样离开】\n（触发规训误读结局）",special:true,action:function(){finish("rule_misread");}},{label:"“我们可以一起想个新办法。”",action:function(){newSeg();you("我们可以一起想个新办法。");narr("他手上的锤子停了。过了很久，他才开口。");say("新办法？……你还愿意想？"," [稳定度 +4] ");addS(4);opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.jurgen.M01();}}]);}}]);diagBtn();};
+N.jurgen.sol=function(){push(last);newSeg();S.diag="misread";addS(-8);addN("N_private_kripke");you("算了。规矩是你自己的事，我不管了。");narr("尤尔根愣了愣，随即咧嘴笑了，笑得不太正常。");say("好。那你走吧。"," [稳定度 -8] ");narr("你离开后的日子里，他打出的东西越来越怪：剑没有刃，刀柄长在刀尖上，铁器上刻满了只有他自己看得懂的划痕。");narr("没有人再找他打铁。他就一个人对着炉子说话，五下，换角度，五下，换角度。");opts([{label:"【就这样离开】\n（触发唯我论误读结局）",special:true,action:function(){finish("solipsism_misread");}},{label:"“不，我不该让你一个人。”",action:function(){newSeg();you("不，我不该让你一个人。");narr("他抬起头，眼睛里有血丝，也有点湿。");say("你……还回来？"," [稳定度 +4] ");addS(4);opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.jurgen.M01();}}]);}}]);diagBtn();};
+N.jurgen.nih=function(){push(last);newSeg();S.diag="misread";addS(-15);addN("N_nihilism_heidegger");you("根本没有规矩。一切都是虚假的。你打出来的东西，不过是一堆废铁。");narr("尤尔根站在原地，眼神一点一点涣散，像炉火被一盆水浇灭。");say("废铁……一切都是废铁……"," [稳定度 -15] ");narr("他举起铁锤，第一下砸在铁砧上，铁砧裂了；第二下砸在墙上，图纸碎了；第三下砸在炉门上，火星炸了一屋子。");narr("人们从此不再来。铁匠铺的烟囱再没冒过烟。");opts([{label:"【就这样离开】\n（触发虚无主义误读结局）",special:true,action:function(){finish("nihilist_misread");}},{label:"“不，你的手茧是真的。你打出的东西是有意义的。”",action:function(){newSeg();you("不，你的手茧是真的。你打出的东西是有意义的。");narr("他举着锤子的手停在半空，慢慢放下来，摊开手掌看着那些茧。");say("真的吗……"," [稳定度 +5] ");addS(5);opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.jurgen.M01();}}]);}}]);diagBtn();};
+N.jurgen.After=function(){last="After";newSeg();narr("接下来的三天，铁匠铺的炉火没灭过。");narr("尤尔根打铁，你递料，他每打五下，你就提醒他换角度。第三天傍晚，第一批新剑出了炉。");narr("人们围过来，半信半疑。尤尔根把一把剑递给最早骂他的那个人，没说话。");narr("那人犹豫着砍向柴堆——剑落下去，柴断成两截，剑身完好。");narr("人群里有人吹了声口哨。尤尔根咧嘴笑了，牙上还是沾着煤灰。");say("规矩，不是谁定的。");narr("他把锤子往铁砧上一搁，声音很响。");say("是咱们一起守出来的。");narr("墙角那片涂鸦还在。你走过去看，发现“真的”两个字旁边，多了一行新刻的划痕——五道，平行的。");narr("你走出铁匠铺时，炉火还亮着。他站在铁砧前，锤子搁在砧面上，没有拿起来。");narr("墙上的图纸被扯掉了，墙上留着一块比周围干净的方形。");opts([{label:"【完成章节】",special:true,action:function(){finish("accurate");}}]);};
+
+/* 莉娜 */
+N.lina.M00=function(){last="M00";newSeg();narr("孩子们开始模仿大人的说法。模仿得很快，模仿得不像。母亲们不再让孩子去石圈。她们说，听多了会学坏。石圈里的人一天少一个。");narr("村口的老椴树把影子拉得很长。影子尽头是一圈石头，石头围成的圆留着一道缺口，缺口正对着一条通往村外的小路。");narr("夕阳斜斜地穿过椴树叶，在孩子们脸上洒下一小片一小片抖动的光。空气里有干草和尘土的味道。");narr("莉娜坐在中间一块平石上，膝盖上摊着一本粗布缝成的“书”。她正讲到最要紧的地方，声音忽然低下去，像怕惊动了什么。");say("真的，昨天夜里，我看见月亮掉进井里了。");narr("一个孩子小声问：“真的吗？”她没有回答，只是笑，眼睛在余光里亮了一下，接着往下讲。");say("我把它捞上来。它在我手心里跳，凉的，像一块没晒过太阳的石头。然后整口井都变成银的了。");if(G.cleared.jurgen){echo("你想起尤尔根：规矩不是谁定的，是咱们一起守出来的。莉娜的故事圈，也是一种“一起守出来”的规矩。");}if(G.cleared.hans){echo("你想起汉斯：只有亲手验证过的，才算是知道。莉娜的“真的”不是汉斯意义上的“知道”，但它同样是一种被生活形式支撑的确信。");}if(G.cleared.marta){echo("你想起玛尔塔：坏的、还在用的、没人管的，才叫疼。莉娜的粉笔圆留着一道门，正如玛尔塔的墙留着一道裂缝。");}narr("她合上书，看着你。孩子们也转过头来。");say("大人也来听故事吗？");opts([{label:"【旁听】不出声，听她讲完。",special:true,action:function(){newSeg();narr("你没出声，往旁边退了一步，站在椴树的影子里。莉娜看了你一眼，继续讲，声音比刚才稳了一点。");say("……后来啊，月亮就在井里住下了。谁去打水，都得先跟它问个好。"," [信任 +1] ");addT(1);N.lina.M01();}},{label:"【打断】“你在撒谎，月亮不可能掉进井里。”",action:function(){newSeg();you("你在撒谎。月亮不可能掉进井里。");narr("孩子们一下子安静了。风从缺口灌进来，吹得粉笔灰打了一个旋。莉娜脸上的光暗了一格，像被谁悄悄拧小了一盏灯。");say("大人都是这样。"," [稳定度 -2] ");addS(-2);addE("E06");N.lina.M01();}},{label:"【观察】先看石圈和道具，不急着说话。",action:function(){newSeg();narr("你没说话，先蹲下去看地上那个不闭合的粉笔圆。莉娜注意到你的动作，没打扰你，只是把书往膝头按了按。");N.lina.M01();}},{label:"【加入】“那后来呢？”",action:function(){newSeg();you("那后来呢？");narr("莉娜眼睛一下子亮了，像捡到一颗别人都没看见的糖。");say("后来啊——后来月亮就赖在井里不肯走了。"," [信任 +2] ");addT(2);addE("E05");N.lina.M01();}}]);};
+N.lina.M01=function(){last="M01";newSeg();narr("石圈里外都很安静。孩子们在等莉娜继续讲，她却在等你。椴树叶的影子在地上慢慢移，像一支很慢的钟。");narr("你可以四处看看，或者继续跟她说话。");var o=[];var obs=[["E01","石圈与粉笔圆","circle"],["E02","那本无字书","book"],["E03","缺口的陶碗","bowl"],["E04","一根羽毛","feather"],["E05","围坐的孩子们","kids"],["E06","莉娜本人","lina"],["E07","地上的字","writing"]];obs.forEach(function(it){if(S.ev.indexOf(it[0])<0)o.push({label:"【观察】"+it[1],action:function(){N.lina[it[2]]();}});});var c=S.ev.filter(function(e){return ["E01","E02","E03","E04","E06","E07"].indexOf(e)>=0;}).length;if(S.ev.indexOf("E05")>=0&&c>=2&&!S.done){S.done=true;o=[];o.push({label:"【对话】莉娜合上书，看着你。",special:true,action:function(){N.lina.M02();}});}if(o.length===0)o.push({label:"（莉娜看着你，等你说话。）",disabled:true});opts(o);diagBtn();};
+N.lina.hot=function(id){var m={E01:"circle",E02:"book",E03:"bowl",E04:"feather",E05:"kids",E06:"lina",E07:"writing"};if(m[id])N.lina[m[id]]();};
+N.lina.circle=function(){last="circle";newSeg();narr("粉笔画的圆不闭合，缺口正对石头围圈的那道缝。风从缺口进来，把粉笔灰吹散了一小撮。");narr("那不像画歪了——像故意留的门。孩子们坐在圈里，可谁都能从缺口走出去。");say("这是门。");narr("莉娜用脚尖点了点缺口。");say("讲故事的时候，门是开的。谁想进来就进来，谁想走就走。");if(G.notes.lina.indexOf("N_lina_echo_marta2")<0&&G.notes.marta.indexOf("N_wall_witt")>=0){addN("N_lina_echo_marta2");echo("你想起玛尔塔：墙不会说话，但它裂了，裂就是它的话。莉娜的门也一样——不说话，但开着。");}opts([{label:"“所以你的故事圈，是自愿进来的。”",action:function(){newSeg();you("所以你的故事圈，是自愿进来的。");narr("她点头，点得很认真，像在确认一件很重要的事。");say("对呀。故事不能关人。"," [信任 +1] ");addT(1);addE("E01");addN("N_lang_game");N.lina.M01();}},{label:"“你连圆都画不圆。”",action:function(){newSeg();you("你连圆都画不圆。");narr("她低头看了看那个缺口，不说话了，脚尖在粉笔线上蹭了蹭。");say("……我画得圆。"," [稳定度 -2] ");addS(-2);addE("E01");addN("N_development_piaget");N.lina.M01();}},{label:"“这个缺口是给谁留的？”",action:function(){newSeg();you("这个缺口是给谁留的？");narr("她歪头想了想，像在数一个看不见的名单。");say("给还没来的人。也给想走的人。"," [信任 +1] ");addT(1);addE("E01");N.lina.M01();}}]);};
+N.lina.book=function(){last="book";newSeg();narr("你凑近那本“书”。粗布缝得很粗，针脚歪歪扭扭，上面全是炭笔划痕和涂鸦，没有一个真正的字。");narr("可莉娜一页一页翻得很认真，嘴里念着“从前啊……”，像在念一本真正的书。");say("这是我的书。");opts([{label:"“上面没有字。”",action:function(){newSeg();you("上面没有字。");narr("她把书抱到胸前，像护着什么怕被风吹走的东西。");say("有。我写的。你看不见而已。"," [信任 +1] ");addT(1);addE("E02");addN("N_make_believe");N.lina.M01();}},{label:"“你不识字，却装识字。”",action:function(){newSeg();you("你不识字，却装识字。");narr("她把书合上，塞到屁股底下坐着，眼睛看着别处。");say("我没装。我在写。"," [稳定度 -2] ");addS(-2);addE("E02");addN("N_private_lina");N.lina.M01();}},{label:"“你念给我听听。”",action:function(){newSeg();you("你念给我听听。");narr("她眼睛一亮，翻开一页，指着划痕念：“真的，有一天，风把整个村子吹到天上去了。”她停了一下，手指往后摸，摸到空白。");say("……后面还没写。"," [信任 +2] ");addT(2);addE("E02");N.lina.M01();}}]);};
+N.lina.bowl=function(){last="bowl";newSeg();narr("一只缺了口的陶碗搁在石头上。刚才讲故事讲到国王时，莉娜把它扣在头顶当王冠，孩子们笑得前仰后合。");narr("现在碗又变回碗了，里面盛着几颗野果。");say("这是王冠。");narr("她看你盯着碗，补了一句。");say("讲完故事，它又是碗了。");opts([{label:"“道具的用处，由故事决定。”",action:function(){newSeg();you("道具的用处，由故事决定。");narr("她眨眨眼，好像没完全听懂，但还是点了点头。");say("反正它想当什么，就当什么。"," [信任 +1] ");addT(1);addE("E03");addN("N_make_believe");N.lina.M01();}},{label:"“破碗就是破碗，别当王冠。”",action:function(){newSeg();you("破碗就是破碗，别当王冠。");narr("她把碗从头顶拿下来，放回石头上，动作很轻，像放下一件不该被吵醒的东西。");say("……好。"," [稳定度 -2] ");addS(-2);addE("E03");N.lina.M01();}},{label:"“那它现在是碗，还是王冠？”",action:function(){newSeg();you("那它现在是碗，还是王冠？");narr("她想了想，把碗举起来对着光，缺口在夕阳里镶了一道金边。");say("看你在哪个故事里。"," [信任 +2] ");addT(2);addE("E03");N.lina.M01();}}]);};
+N.lina.feather=function(){last="feather";newSeg();narr("一根灰白的羽毛插在石缝里，羽轴已经磨得发亮。你注意到，莉娜每次开口说“真的”之前，指尖都会在它上面停一停。");say("这是我的开关。");narr("她主动解释，手指在羽毛上捻了捻，像捻一根灯芯。");say("摸一下，故事就开始了。不摸，就是平常说话。");opts([{label:"“所以羽毛是进入游戏的开关。”",action:function(){newSeg();you("所以羽毛是进入游戏的开关。");narr("她用力点头，像终于有人听懂了她的母语。");say("对！你懂！"," [信任 +2] ");addT(2);addE("E04");addN("N_make_believe");addN("N_performative");N.lina.M01();}},{label:"“你有点不对劲。”",action:function(){newSeg();you("你有点不对劲。");narr("她把羽毛从石缝里拔出来，攥在手心，像攥着一根刺。");say("你什么意思？"," [稳定度 -1] ");addS(-1);addE("E04");addN("N_development_piaget");N.lina.M01();}},{label:"“不摸羽毛，你就不能讲故事了？”",action:function(){newSeg();you("不摸羽毛，你就不能讲故事了？");narr("她试了试，把手收回去，张了张嘴，又闭上。风从缺口进来，吹得羽毛在她手背上蹭了一下。");say("……不能。羽毛是门。"," [信任 +1] ");addT(1);addE("E04");N.lina.M01();}}]);};
+N.lina.kids=function(){last="kids";newSeg();narr("四个更小的孩子围坐。莉娜说“真的”时，他们连呼吸都放轻；讲完，只问“然后呢”，没人问“这是真的吗”。");narr("一个最小的孩子偷偷把陶碗往自己头顶扣了一下，被旁边的人拍掉。");say("他们知道。");narr("莉娜看着他们，声音放轻，像怕把一层薄薄的东西碰碎。");say("我说“真的”，他们就知道要开始听了。");opts([{label:"“他们懂你的游戏规则。”",action:function(){newSeg();you("他们懂你的游戏规则。");narr("她笑了，露出一颗缺了的门牙。");say("对。他们不傻。"," [信任 +2] ");addT(2);addE("E05");addN("N_lang_game");addN("N_family_resemblance");N.lina.M01();}},{label:"“他们被你骗了。”",action:function(){newSeg();you("他们被你骗了。");narr("她的笑一下子没了。");say("我没骗。他们知道是故事。"," [稳定度 -2] ");addS(-2);addE("E05");N.lina.M01();}},{label:"“如果他们问‘真的吗’，你会怎么答？”",action:function(){newSeg();you("如果他们问“真的吗”，你会怎么答？");narr("她想了想，摇头。");say("他们不问。问了，就不是故事了。"," [信任 +1] ");addT(1);addE("E05");N.lina.M01();}}]);};
+N.lina.lina=function(){last="lina";newSeg();narr("你仔细看莉娜。她讲故事时眼睛发亮，手舞足蹈，声音都换了腔调；一讲完，她立刻恢复平常，问孩子们“你们饿不饿”。");narr("像有人在她身体里开了一扇门，又轻轻关上。");say("你看我干嘛。");opts([{label:"“你能自由进出故事。”",action:function(){newSeg();you("你能自由进出故事。");narr("她愣了一下，然后有点得意地笑了，像被人说中了心事。");say("当然。故事是我的。我想进就进，想出就出。"," [信任 +2] ");addT(2);addE("E06");addN("N_lang_game");addN("N_form_life_lina");N.lina.M01();}},{label:"“你讲故事的时候，像另一个人。”",action:function(){newSeg();you("你讲故事的时候，像另一个人。");narr("她歪头，认真想了想。");say("那是我啊。讲故事的我，也是我。"," [信任 +1] ");addT(1);addE("E06");N.lina.M01();}},{label:"“你是不是有点不正常？”",action:function(){newSeg();you("你是不是有点不正常？");narr("她不笑了，低头去抠石头缝里的青苔，抠了很久。");say("……大人总这么说。"," [稳定度 -2] ");addS(-2);addE("E06");addN("N_development_piaget");N.lina.M01();}}]);};
+N.lina.writing=function(){last="writing";newSeg();narr("粉笔圆旁边有一排她画的“字”，其实是画：一道横，一个圈，一道竖。她指着它们说“这是我写的”。");narr("你凑近看，一个真正的字也没有，可那些画有它们自己的次序。");say("这是“真的”。");narr("她指着其中一组画。");say("这个，是“故事”。");opts([{label:"“你在玩‘写字’的游戏。”",action:function(){newSeg();you("你在玩“写字”的游戏。");narr("她眼睛一亮，抓起粉笔。");say("对！我写给你看！"," [信任 +2] ");addT(2);addE("E07");addN("N_performative");N.lina.M01();}},{label:"“这不是字，你在冒充识字。”",action:function(){newSeg();you("这不是字，你在冒充识字。");narr("她一脚把那些画蹭掉了一半，粉笔灰在夕阳里浮起来。");say("……你不懂。"," [稳定度 -2] ");addS(-2);addE("E07");addN("N_private_lina");N.lina.M01();}},{label:"“那‘真的’和‘故事’，哪个先写？”",action:function(){newSeg();you("那“真的”和“故事”，哪个先写？");narr("她认真想了想，用粉笔在地上先画了一道横。");say("先写“真的”。写了它，才能开始。"," [信任 +1] ");addT(1);addE("E07");N.lina.M01();}}]);};
+N.lina.M02=function(){last="M02";newSeg();narr("莉娜合上书，看着你。孩子们也转过头来，脸上的光一小片一小片地晃。");say("你也来讲一个吧。");narr("她把手里的羽毛递向你，羽轴在夕光里泛着一点旧金色。");say("摸一下，就可以开始了。");opts([{label:"讲一个真实发生的事：“我今天从村口走到这里，路上看见一只鸡。”",action:function(){newSeg();you("我今天从村口走到这里，路上看见一只鸡。");narr("莉娜认真听完，点点头。");say("然后呢？");narr("你愣住了——她把真实也当成了故事的开头。");say("……没有然后了。"," [信任 +1] ");addT(1);addE("E05");setTimeout(N.lina.M03,400);}},{label:"进入她的游戏：“真的，我今天看见一只鸡把太阳啄了个洞。”",action:function(){newSeg();you("真的，我今天看见一只鸡把太阳啄了个洞。");narr("莉娜眼睛一下子亮了，往前探身，辫梢扫过石面。");say("那太阳漏光了吗？"," [信任 +2] ");addT(2);addE("E08");addN("N_performative");setTimeout(N.lina.M03,400);}},{label:"拒绝：“我不想讲故事，我想问你问题。”",action:function(){newSeg();you("我不想讲故事，我想问你问题。");narr("她收敛笑容，把羽毛收回去，插回石缝。");say("大人都是这样。"," [信任 -1] ");addT(-1);setTimeout(N.lina.M03,400);}},{label:"测试她：“你说‘真的’的时候，是真的吗？”",action:function(){newSeg();you("你说“真的”的时候，是真的吗？");narr("她歪头看你，像看一个问错了题的学生。");say("你问得不对。"," [信任 +1] ");addT(1);addE("E09");addN("N_lang_game");setTimeout(N.lina.M03,400);}}]);};
+N.lina.M03=function(){last="M03";newSeg();narr("莉娜忽然坐直了，伸手摸了一下石缝里的羽毛。夕阳正好落到椴树梢上，光一寸一寸往下退。");say("真的，我看见一只鸟把太阳叼走了，天就黑了。");narr("孩子们安静下来，连那个最小的也不动了。");say("然后我把太阳从鸟嘴里抢回来，放回天上。");narr("她讲完，看着你。椴树叶的影子在她脸上晃了一下。");say("你信吗？");opts([{label:"“我信。”",action:function(){newSeg();you("我信。");narr("她笑了，笑得有点狡黠。");say("你骗人。你根本不信。");narr("但她没有生气，反而往前凑了凑。");say("不过没关系。假装相信，也是故事的一部分。"," [信任 +2] ");addT(2);addE("E10");addN("N_make_believe");setTimeout(N.lina.M04,500);}},{label:"“我不信，但我喜欢这个故事。”",action:function(){newSeg();you("我不信，但我喜欢这个故事。");narr("莉娜想了想，很认真地点了点头，像在称一件东西的分量。");say("那你是在听故事，不是在听真的。");say("这两个不一样。"," [信任 +2，稳定度 +2] ");addT(2);addS(2);addE("E10");addN("N_make_believe");addN("N_family_resemblance");setTimeout(N.lina.M04,500);}},{label:"“鸟不可能叼走太阳，你在胡说。”",action:function(){newSeg();you("鸟不可能叼走太阳，你在胡说。");narr("她沉默了一会儿，把羽毛从石缝里拔出来，攥在手心，指节有点发白。");say("大人都是这样。"," [稳定度 -3] ");addS(-3);addE("E10");setTimeout(N.lina.M04,500);}},{label:"“这个故事有什么意义？”",action:function(){newSeg();you("这个故事有什么意义？");narr("她困惑地皱起眉，像第一次遇到有人问这种问题。");say("意义？故事就是故事啊。");narr("她低头看了看手里的羽毛，又抬头。");say("……没有意义。就是好玩。"," [稳定度 -2] ");addS(-2);addE("E10");addN("N_narrative_lyotard");setTimeout(N.lina.M04,500);}}]);};
+N.lina.M04=function(){last="M04";newSeg();narr("一个村民母亲冲进石圈，一把拉起自己的孩子，力气大得孩子踉跄了一下。");narr("“别听她胡说！她说的都是假的！”");narr("莉娜第一次沉默。她低头摸那根羽毛，指尖在上面来回蹭，没反驳。");narr("孩子被拉得踉跄了一下，回头看了莉娜一眼，嘴唇动了动，没出声。");opts([{label:"对母亲说：“她没有骗人，她在讲故事。”",action:function(){newSeg();you("她没有骗人，她在讲故事。");narr("母亲半信半疑，手松了一点。");narr("莉娜抬头看你，眼神不同了，像第一次有人替她把一扇门推开。");say("……你替我说了。"," [信任 +2，稳定度 +2] ");addT(2);addS(2);addE("E11");addN("N_form_life_lina");addN("N_performative");setTimeout(N.lina.M05,500);}},{label:"对莉娜说：“你以后别对小孩子说‘真的’了。”",action:function(){newSeg();you("你以后别对小孩子说“真的”了。");narr("莉娜沉默更久，久到椴树叶的影子又移了一寸，然后轻轻说了一个字。");say("好。"," [稳定度 -3] ");addS(-3);addE("E11");addN("N_discipline_lina");setTimeout(N.lina.M05,500);}},{label:"对母亲说：“孩子们自己分得清。”",action:function(){newSeg();you("孩子们自己分得清。");narr("母亲更生气了：“分得清？他们才多大！”她拉着孩子走了，头也不回。莉娜看着他们的背影。");say("……他们分得清。"," [稳定度 -2] ");addS(-2);addE("E11");addN("N_private_lina");setTimeout(N.lina.M05,500);}},{label:"不说话，观察莉娜的反应。",action:function(){newSeg();narr("你没说话。母亲拉着孩子走了，石圈里空出一个位置。");narr("莉娜等他们走远，才转头看你。");say("你为什么不说话？"," [信任 -1] ");addT(-1);addE("E11");setTimeout(N.lina.M05,500);}}]);};
+N.lina.M05=function(){last="M05";S.m5=true;newSeg();narr("村长带着两个护卫来到老椴树下。孩子们往后缩了缩，像一群被风惊动的麻雀。");narr("“有人说你撒谎成性，带坏小孩。”");narr("“从今天起，不许你在村口讲故事。”");narr("莉娜站起来，第一次用很大的声音说话，声音在椴树底下撞了一下。");say("我没有撒谎！");say("我说“真的”的时候，是在讲故事！");narr("她说完，自己愣了一下，好像也意识到这句话在大人听来像什么。");opts([{label:"“村长，她说的‘真的’和我们说的不一样。她是在邀请孩子进入故事。”",action:function(){newSeg();you("村长，她说的“真的”和我们说的不一样。她是在邀请孩子进入故事。");narr("村长犹豫了。莉娜看你，眼睛亮得吓人。");say("……你懂。"," [信任 +2，稳定度 +2] ");addT(2);addS(2);addE("E12");addN("N_form_life_lina");N.lina.M01();}},{label:"“村长说得对，你以后不许再说‘真的’。”",action:function(){newSeg();you("村长说得对，你以后不许再说“真的”。");narr("莉娜低头，把羽毛从石缝里拔出来，攥在手里，攥得很紧。");say("……好。"," [稳定度 -4] ");addS(-4);addE("E12");addN("N_discipline_lina");N.lina.M01();}},{label:"“孩子们喜欢听，就让她讲吧。”",action:function(){newSeg();you("孩子们喜欢听，就让她讲吧。");narr("村长更生气：“喜欢？喜欢就能胡说？”");narr("莉娜看着你们，没说话，把书往膝头按了按。");say("……"," [稳定度 -3] ");addS(-3);addE("E12");N.lina.M01();}},{label:"“故事没有意义，讲不讲都一样。”",action:function(){newSeg();you("故事没有意义，讲不讲都一样。");narr("莉娜猛地抬头看你，像被扇了一巴掌。椴树叶的影子在她脸上停住了。");say("……你说什么？"," [稳定度 -6] ");addS(-6);addE("E12");addN("N_narrative_lyotard");N.lina.M01();}}]);};
+N.lina.acc=function(){push(last);newSeg();S.diag="accurate";addS(8);S.trust=3;you("你说“真的”，不是在判断真假。\n你是在说：‘来，一起假装’。");narr("莉娜盯着你看了很久。夕阳从椴树梢上滑下去，石圈里的光暗了一档，她的眼睛却亮着。");narr("然后她慢慢笑了。");say("对。就是这样。");narr("她站起来，走到粉笔圆旁边，把那个缺口补上了一小段，又停住，留了一道小口。");say("门还是要留着的。");addN("N_lang_game");addN("N_form_life_lina");narr("她转向村长，用大人的话又说了一遍：");say("村长，我说“真的”的时候，是开始讲故事。");narr("村长皱着眉，但没打断她。");opts([{label:"【继续】帮她把话说给全村人听。",special:true,action:function(){N.lina.After();}}]);diagBtn();};
+N.lina.lie=function(){push(last);newSeg();S.diag="misread";addS(-10);addN("N_discipline_lina");you("你在撒谎。以后不许再说“真的”。");narr("莉娜没有争辩。她把羽毛、陶碗、无字书都收进一个布袋，埋在椴树下。土盖上去的时候，她拍得很平，像在拍一个睡着的人。");say("好。我不说了。"," [稳定度 -10] ");narr("孩子们来问她为什么不讲了。");say("大人说那是假的。");narr("她学会了大人的词。从那以后，她再没在村口讲过故事。");opts([{label:"【就这样离开】\n（触发谎言误读结局）",special:true,action:function(){finish("lie_misread");}},{label:"“等等，我不是要你闭嘴，我是想听懂你。”",action:function(){newSeg();you("等等，我不是要你闭嘴，我是想听懂你。");narr("她从树下抬起头，眼睛红红的。");say("……真的？"," [稳定度 +4] ");addS(4);opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.lina.M01();}}]);}}]);diagBtn();};
+N.lina.def=function(){push(last);newSeg();S.diag="misread";addS(-8);addN("N_development_piaget");you("你分不清现实和想象。这不是坏事，但得治。");narr("村子里请来了一个医生，给莉娜做测试：一张卡片画着苹果，一张画着月亮，问她哪个是真的。");narr("她全答对了。");narr("可从那天起，她讲故事之前会先停一下，像在检查自己。");say("我现在知道什么是真的了。"," [稳定度 -8] ");narr("她说这话的时候，眼睛不亮了，像一盏灯被人从里面罩上了。");opts([{label:"【就这样离开】\n（触发认知缺陷误读结局）",special:true,action:function(){finish("deficit_misread");}},{label:"“不，你不是有病。你只是会两种说话方式。”",action:function(){newSeg();you("不，你不是有病。你只是会两种说话方式。");narr("她抬头看你，像第一次听见这种说法。");say("……两种？"," [稳定度 +5] ");addS(5);opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.lina.M01();}}]);}}]);diagBtn();};
+N.lina.nih=function(){push(last);newSeg();S.diag="misread";addS(-15);addN("N_narrative_lyotard");you("故事没有意义。真假都一样。别讲了。");narr("莉娜愣住，然后把羽毛、陶碗、无字书全都扔进火里。羽毛卷起来，一瞬间就没了。");say("那就不讲了。"," [稳定度 -15] ");narr("孩子们散了。老椴树下空了很久，只有粉笔圆还在，慢慢被雨冲淡。");narr("几天后，你看见莉娜在村口，对着一群更小的孩子说：");say("真的，什么都没有。");narr("孩子们哭了。");opts([{label:"【就这样离开】\n（触发虚无主义误读结局）",special:true,action:function(){finish("nihilist_misread");}},{label:"“不，故事是有意义的。你讲的故事，有人记得。”",action:function(){newSeg();you("不，故事是有意义的。你讲的故事，有人记得。");narr("她看着你，眼泪在眼眶里打转，没掉下来。");say("……谁记得？"," [稳定度 +5] ");addS(5);opts([{label:"【重新诊断】",special:true,action:function(){S.diag="none";S.ans={obj:null,feat:null,act:null};N.lina.M01();}}]);}}]);diagBtn();};
+N.lina.After=function(){last="After";newSeg();narr("那天傍晚，莉娜站在石圈中央，当着村长和人们的面，讲了一个故事。");narr("她先说：“这不是真的，这是一个故事。”然后才开始讲。椴树叶的影子在她脚边慢慢移。");narr("孩子们听得入神。大人们先是皱眉，后来有人笑了，笑得很轻，像怕惊动什么。");narr("村长没再说什么，转身走了。");narr("莉娜讲完，跑到你面前，把羽毛塞进你手里。羽轴还带着她的体温。");say("下次你来，我讲一个真的故事给你听。");narr("你注意到，她说“真的故事”的时候，没有一点犹豫。");narr("你走出石圈时，天已经黑了。孩子们散了，她一个人坐在平石上，膝盖上摊着那本粗布书。");narr("椴树的影子把她整个人盖住了。");opts([{label:"【完成章节】",special:true,action:function(){finish("accurate");}}]);};
+
+/* 终局 */
+N.final.M00=function(){
+  last="M00";newSeg();
+  if(!S.finalIntroShown){
+    S.finalIntroShown=true;
+    narr("四段诊断结束之后，广场中央多了一个人。没有人知道他是哪天站到那里去的。人们绕着他走，绕得很自然，像绕过一棵早就长在那里的树。");
+    narr("广场比玛尔塔的屋子大，比铁匠铺空。正中央立着一块石板，齐胸高，表面被雨水和风磨得发灰。");
+    narr("石板前站着一个人，背对着你。他不高，也不瘦。穿一件洗得发白的旧袍子，袖口磨出了毛边。");
+    narr("他不看任何人，也不动。风从广场穿过，他的衣角动了一下，又垂下去。");
+    narr("有一个孩子跑过来，在离他三步远的地方停住，绕了个弯，又跑开了。孩子没有看他。孩子绕得很自然，像绕过一棵树、一口井、一件早就摆在那里的东西。");
+  }
+  var o=[];
+  if(!S.finalAsked){
+    o.push({label:"“你怎么了？”",action:function(){
+      push(last);newSeg();you("你怎么了？");
+      narr("声音落下去，像石子掉进深井。没有回响。");
+      narr("他没有转头。");
+      narr("风又吹了一下。石板上的薄灰被扫出一道浅浅的弧，像有人用手指划过，又抹平了。");
+      narr("你等了一会儿。你发现自己还在等。你不知道在等什么。");
+      S.finalAsked=true;
+      addS(-1);N.final.M00();
+    }});
+  }else{
+    o.push({label:"（你已经问过了。他没有回答。）",disabled:true});
+  }
+  if(G.cleared.marta)o.push({label:S.finalEchoUsed.marta?"（已用玛尔塔的“疼”说过话）":"用玛尔塔的“疼”对他说话",disabled:!!S.finalEchoUsed.marta,action:function(){
+    push(last);newSeg();you("墙在疼。你这里，也有什么东西在疼吗？");
+    S.finalEchoUsed.marta=true;
+    narr("他的肩动了一下。很轻，像一根绷紧的弦被风碰了一下。");
+    narr("但他没有转头。");
+    narr("你忽然明白：他听懂了。他只是没有可以回应的游戏。");
+    narr("疼需要一个可以照料的对象。他听懂了疼，可他没有地方放它。");
+    addN("N_silent_echo_marta");
+    echo("【回响 · 疼在语言之外】玛尔塔的‘疼’要求被照料。沉默者的‘疼’没有可以照料的对象。他听懂了，但他没有地方放它。");
+    N.final.M00();
+  }});
+  if(G.cleared.hans)o.push({label:S.finalEchoUsed.hans?"（已用汉斯的“我知道”说过话）":"用汉斯的“我知道”对他说话",disabled:!!S.finalEchoUsed.hans,action:function(){
+    push(last);newSeg();you("我知道你在这里。我亲手摸过这些石板，我知道它们是凉的。");
+    S.finalEchoUsed.hans=true;
+    narr("他的手抬了一下，又放下。");
+    narr("他没有转头。");
+    narr("你知道他听见了。但“知道”在他这里，没有落脚的地方。");
+    narr("知道需要一双可以验证的手。他验证过一切，然后停下了。知道得太多，也会让人说不出话。");
+    addN("N_silent_echo_hans");
+    echo("【回响 · 知道在语言之外】汉斯的‘我知道’要求亲手验证。沉默者验证过一切，然后停下了。知道得太多，也会让人说不出话。");
+    N.final.M00();
+  }});
+  if(G.cleared.jurgen)o.push({label:S.finalEchoUsed.jurgen?"（已用尤尔根的“规矩”说过话）":"用尤尔根的“规矩”对他说话",disabled:!!S.finalEchoUsed.jurgen,action:function(){
+    push(last);newSeg();you("刻石板也有规矩吧。你每刻几刀，换一次手？");
+    S.finalEchoUsed.jurgen=true;
+    narr("他的手指在袍子侧面轻轻敲了一下。五下。停住。");
+    narr("然后他把手收回袖子里。");
+    narr("他没有转头。但他敲的那五下，你认得。");
+    narr("规矩需要有人一起守。他一个人刻石板，刻了半辈子。他的规矩只有他自己守，所以它没法成立。");
+    addN("N_silent_echo_jurgen");
+    echo("【回响 · 规矩在语言之外】尤尔根的‘规矩’要求共同实践。沉默者一个人刻石板，刻了半辈子。他的规矩只有他自己守，所以它没法成立。");
+    N.final.M00();
+  }});
+  if(G.cleared.lina)o.push({label:S.finalEchoUsed.lina?"（已用莉娜的“真的”说过话）":"用莉娜的“真的”对他说话",disabled:!!S.finalEchoUsed.lina,action:function(){
+    push(last);newSeg();you("真的，我看见你站在这里了。");
+    S.finalEchoUsed.lina=true;
+    narr("他的头侧了一下，像在听一个很远的、他几乎要忘记的声音。");
+    narr("然后他慢慢转回去，背对着你。");
+    narr("他没有笑，也没有说话。但他侧头的那一下，比说话更清楚。");
+    narr("“真的”需要有人听。他讲了半辈子村史，最后没有人听了。他的“真的”没有听众，就退出了语言。");
+    addN("N_silent_echo_lina");
+    echo("【回响 · 真的在语言之外】莉娜的‘真的’要求有人听。沉默者讲了半辈子村史，最后没有人听了。他的‘真的’没有听众，就退出了语言。");
+    N.final.M00();
+  }});
+  o.push({label:"沉默，和他一起站着",action:function(){
+    push(last);newSeg();
+    narr("你没有说话。");
+    narr("你走到他旁边，和他一起站着，看那块石板。");
+    narr("石板很旧。表面有一层薄灰，灰下面隐约有刻痕，被磨得很浅。");
+    narr("太阳在头顶。你站了一会儿，觉得脚有点酸。他站着，一动不动，像已经站了很久，像还要站很久。");
+    narr("你开始注意一些很小的事：风从哪个方向来，灰尘落在石板上是什么声音，他的呼吸有没有起伏。");
+    narr("他没有呼吸的起伏。或者说，太小了，你看不出来。");
+    narr("你们站了很久。久到你忘了自己在等什么。");
+    narr("然后他转头看了你一眼。");
+    narr("很快。又转回去。");
+    narr("但那一眼你看清了：他不是空的。他是被什么截断了。像一句话说到一半，刀滑了一下。");
+    addE("F_E01");addS(2);addT(1);
+    N.final.M01();
+  }});
+  opts(o);diagBtn();
+};
+N.final.hot=function(id){
+  if(id==="F_E01")N.final.M00();
+  else if(id==="F_E02")N.final.M01();
+};
+N.final.M01=function(){
+  last="M01";newSeg();
+  if(!S.finalM01Intro){
+    S.finalM01Intro=true;
+    narr("你蹲下来，看石板背面的刻痕。");
+    narr("刻痕很浅，被雨水磨过很多年。要凑得很近，才能看出那是字。");
+    narr("不是完整的句子。是名字，日期，几件旧事。刻得很工整，一笔一画，像一份不肯交出去的账。");
+    narr("你注意到，每一段刻痕的最后，都断在一个地方。不是句号。是断。像刻字的人写到一半，刀停了。");
+    narr("你把手指放上去。石头是凉的。凉得很均匀，像它已经凉了很多年。");
+  }
+  var o=[];
+  o.push({label:(S.finalRead&&S.finalRead.R1)?"再读一遍第一段刻痕":"读第一段刻痕",action:function(){N.final.R1();}});
+  o.push({label:(S.finalRead&&S.finalRead.R2)?"再读一遍第二段刻痕":"读第二段刻痕",action:function(){N.final.R2();}});
+  o.push({label:(S.finalRead&&S.finalRead.R3)?"再读一遍第三段刻痕":"读第三段刻痕",action:function(){N.final.R3();}});
+  o.push({label:(S.finalRead&&S.finalRead.R4)?"再读一遍第四段刻痕":"读第四段刻痕",action:function(){N.final.R4();}});
+  var readAny=S.ev.indexOf("F_E02")>=0||S.ev.indexOf("F_E03")>=0||S.ev.indexOf("F_E04")>=0||S.ev.indexOf("F_E05")>=0;
+  o.push({label:"问他：“这些刻痕，是你刻的？”",action:function(){
+    push(last);newSeg();
+    if(!readAny){
+      you("这些刻痕，是你刻的？");
+      narr("他没有动。");
+      narr("你忽然觉得，这个问题问得太早了。他还没有理由回答你。");
+      narr("你站在石板前，觉得自己像一个来早了的人。");
+      addS(-1);N.final.M01();
+    }else{
+      you("这些，是你刻的。你刻到一半，停下来了。");
+      narr("他慢慢抬起手，指向石板上一个位置。");
+      narr("那是他最后一次刻字的地方。");
+      narr("你凑过去看。那里刻着一个没有写完的句子——");
+      narr("“……那天以后，我就不知道该——”");
+      narr("刻痕到这里断了。后面是一道很长的空白。");
+      narr("空白很干净。干净得像有人用袖子擦过，擦了很多遍。");
+      addE("F_E06");N.final.M02();
+    }
+  }});
+  o.push({label:"不读了，直接问他“你为什么不说话”",action:function(){
+    push(last);newSeg();
+    you("你为什么不说话？");
+    narr("他没有动。");
+    narr("风从广场穿过，把石板上的薄灰吹起来一层。");
+    narr("你看着那层灰落回去，忽然觉得自己问错了。");
+    narr("他不是不说话。他是没有可以说话的地方。");
+    narr("这个念头让你很不舒服。你说不清为什么。");
+    addS(-2);N.final.M01();
+  }});
+  if(S.ev.indexOf("F_E06")>=0)o.push({label:"【继续】他转过身来。",special:true,action:function(){N.final.M02();}});
+  opts(o);diagBtn();
+};
+N.final.R1=function(){last="R1";newSeg();if(!S.finalRead)S.finalRead={};var first=!S.finalRead.R1;S.finalRead.R1=true;addE("F_E02");narr("“……那年饥荒，磨坊的汉斯把最后半袋面粉分给了孩子。他自己喝了三天稀汤。”");narr("刻痕到这里断了。后面是一片空白，没有字。");if(first){narr("你想起汉斯攥着面粉袋的样子。你不知道他当年分面粉的时候，是不是也这样说。");}else{narr("你又想起汉斯。这次想起的是他把面粉袋往桌上一搁，说“我看它装满了”。");}N.final.M01();};
+N.final.R2=function(){last="R2";newSeg();if(!S.finalRead)S.finalRead={};var first=!S.finalRead.R2;S.finalRead.R2=true;addE("F_E03");narr("“……铁匠的师父在火里没出来。尤尔根那年在铁匠铺里关了三天，出来的时候，手上多了五道伤。”");narr("刻痕到这里断了。后面是一片空白，没有字。");if(first){narr("你想起尤尔根锤柄上的五道划痕。原来那不是他自己刻的。原来那五道伤，比锤柄更早。");}else{narr("你又想起尤尔根。这次想起的是他把锤柄翻了个面，不让你看。");}N.final.M01();};
+N.final.R3=function(){last="R3";newSeg();if(!S.finalRead)S.finalRead={};var first=!S.finalRead.R3;S.finalRead.R3=true;addE("F_E04");narr("“……玛尔塔的墙第一次裂的时候，她还没老。她一个人搬了三天石头，把墙补上了。”");narr("刻痕到这里断了。后面还有一小段，只刻了一个字的一半，像刀滑了一下。");if(first){narr("你想起玛尔塔摸着墙说“轻一点”。原来那堵墙，裂过不止一次。原来她一个人补了不止一次。");}else{narr("你又想起玛尔塔。这次想起的是她蹲在墙边，掌心贴着新补的那块，像在听里面还有没有声音。");}N.final.M01();};
+N.final.R4=function(){last="R4";newSeg();if(!S.finalRead)S.finalRead={};var first=!S.finalRead.R4;S.finalRead.R4=true;addE("F_E05");narr("“……莉娜的母亲是村子里最后一个会讲故事的。她走的那天，莉娜还不会说‘真的’。”");narr("刻痕到这里断了。后面是一道很深的划痕，不像刻字，像有人用刀划了一下。");if(first){narr("你想起莉娜说“真的”的时候，眼睛会亮。原来那个词，是从她母亲那里来的。原来她学会说“真的”的那一天，已经没有人可以听她说了。");}else{narr("你又想起莉娜。这次想起的是她低头蹭粉笔灰，说“她走的那天，我还不会说‘真的’”。");}N.final.M01();};
+
+N.final.M02=function(){
+  last="M02";newSeg();
+  narr("沉默者转过身来，第一次正面看着你。");
+  narr("他的眼睛不空。里面有东西，只是被压得很深。像水底的石头，你看得见它的形状，但捞不上来。");
+  narr("他开口了。声音很轻，像很久没用过。");
+  say("所有词都被用过了。");
+  say("但没一个词是我的。");
+  narr("他伸出手，掌心向上。");
+  say("给我一个词。");
+  narr("他的手很干。掌纹很深，像石板上那些刻痕。");
+  warn("你可以给他一个词，也可以不给。");
+  warn("给出去，就收不回来了。");
+  var o=[];
+
+  o.push({label:G.cleared.marta?"给他「疼」（玛尔塔的“疼”）":"给他「疼」（未达成玛尔塔章的「准确理解」，不可选）",disabled:!G.cleared.marta,action:function(){
+    push(last);newSeg();
+    narr("你把“疼”放在他掌心。");narr("他看着这个词，看了很久。");say("疼……");narr("他试着用了一下。");say("石板……疼。");
+    narr("他说得很标准，很正确。像任何一个人会说的一样。");
+    narr("然后他点了点头，转身，在石板上开始刻字。刻得很工整，一笔一画，和他当记录员时一样。");
+    narr("太阳升到头顶，又慢慢偏西。他刻了一整天。");
+    narr("人们开始从他面前经过。石板被填满了。村史继续。");
+    narr("村庄重新学会了说话。");narr("没有人记得那个不说话的人。");
+    narr("你站在广场上，听见有人说“石板疼”，没有人觉得奇怪。");
+    narr("你也说了一句“石板疼”。你说得很自然。");
+    finish("silent_word_public");
+  }});
+  o.push({label:G.cleared.hans?"给他「我知道」（汉斯的“我知道”）":"给他「我知道」（未达成汉斯章的「准确理解」，不可选）",disabled:!G.cleared.hans,action:function(){
+    push(last);newSeg();
+    narr("你把“我知道”放在他掌心。");narr("他看着这个词，看了很久。");say("我知道……");narr("他试着用了一下。");say("我知道石板是凉的。");
+    narr("他说得很标准。他说“我知道”的时候，没有人怀疑他。");
+    narr("然后他点了点头，转身，在石板上开始刻字。刻得很工整。每刻完一段，他会停下来，伸手摸一摸石面，像在确认。");
+    narr("人们开始从他面前经过。石板被填满了。村史继续。");
+    narr("村庄重新学会了说话。没有人记得那个不说话的人。");
+    narr("你站在广场上，听见有人说“我知道”，没有人觉得奇怪。你也说了一句。你说得很自然。");
+    finish("silent_word_public");
+  }});
+  o.push({label:G.cleared.jurgen?"给他「规矩」（尤尔根的“规矩”）":"给他「规矩」（未达成尤尔根章的「准确理解」，不可选）",disabled:!G.cleared.jurgen,action:function(){
+    push(last);newSeg();
+    narr("你把“规矩”放在他掌心。");narr("他看着这个词，看了很久。");say("规矩……");narr("他试着用了一下。");say("刻石板有规矩。每五刀，换一次手。");
+    narr("他说得很标准。他刻的石板，每五刀换一次手。手换得很稳。五下，换，五下，换。");
+    narr("然后他点了点头，转身，在石板上开始刻字。人们开始从他面前经过。石板被填满了。村史继续。");
+    narr("村庄重新学会了说话。没有人记得那个不说话的人。");
+    narr("你站在广场上，听见有人说“规矩”，没有人觉得奇怪。你也说了一句。你说得很自然。");
+    finish("silent_word_public");
+  }});
+  o.push({label:G.cleared.lina?"给他「真的」（莉娜的“真的”）":"给他「真的」（未达成莉娜章的「准确理解」，不可选）",disabled:!G.cleared.lina,action:function(){
+    push(last);newSeg();
+    narr("你把“真的”放在他掌心。");narr("他看着这个词，看了很久。");say("真的……");narr("他试着用了一下。");say("真的，那年饥荒，磨坊的汉斯把最后半袋面粉分给了孩子。");
+    narr("他说得很标准。他讲村史的时候，开头总是“真的”。每刻完一段，他会小声念一遍，像在讲给谁听。");
+    narr("人们开始从他面前经过。石板被填满了。村史继续。");
+    narr("村庄重新学会了说话。没有人记得那个不说话的人。");
+    narr("你站在广场上，听见有人说“真的”，没有人觉得奇怪。你也说了一句。你说得很自然。");
+    finish("silent_word_public");
+  }});
+
+  o.push({label:"给他「沉默」",special:true,action:function(){
+    push(last);newSeg();
+    narr("你没有从四章里拿词。");narr("你把“沉默”放在他掌心。");narr("他看着这个词，看了很久，很久。");narr("然后他笑了。");
+    narr("这是你见他第一次笑。笑得不大，只是嘴角动了一下，像一块很久没动过的石头，被风碰了一下。");
+    say("这个词……");say("我可以不用它吗？");you("可以。");narr("他点头，把“沉默”还给你。");
+    narr("然后他转身，在石板上开始刻东西。");narr("不是字。是刻痕。");
+    narr("一道道平行的、有节奏的划痕。像尤尔根锤柄上的五道，像莉娜粉笔圆缺口的那一小段，像玛尔塔墙上裂缝的走向。");
+    narr("他刻得很慢。每刻完一道，他会停一下，像在听什么。");
+    narr("太阳偏西。人们开始从他面前经过。");
+    narr("他们看不懂那些刻痕。但他们知道，那是在记录。");
+    narr("有人停下来看了一会儿。有人问：“这是什么？”");narr("没有人回答。问的人也没有再问。");
+    narr("他不再需要说话。");narr("但他的刻痕，每个人都看得懂。");
+    narr("你站在广场上，什么也没说。你觉得这样很好。");
+    finish("silent_silence");
+  }});
+
+  o.push({label:"不给他任何词",special:true,action:function(){
+    push(last);newSeg();
+    narr("你把手收回来。");narr("他等了一会儿，然后也把手收回去。");narr("他没有问你为什么。");
+    narr("他转过身，继续面对石板，背对着你。");
+    narr("风从广场穿过。石板上的灰被吹起来，又落回去。");
+    narr("你站在他旁边。你们谁也没有说话。");
+    narr("村庄的语义稳定度在这一刻归零。");narr("所有词都失效了。");
+    narr("但你们两个人，谁也没觉得有什么不对。");
+    narr("太阳偏西。人们开始绕开你们。绕得很自然，像绕过一块石头、一口井、一件早就摆在那里的东西。");
+    narr("你站了很久。你发现自己不再等什么了。");
+    finish("babel");
+  }});
+
+  var allMis=[
+    {w:"权力",need:[["marta","dismissive"],["jurgen","rule_misread"],["hans","power"]],tip:"需在玛尔塔章走贬抑误读、尤尔根章走规训误读、或汉斯章走权力误读"},
+    {w:"绝对",need:[["hans","absolute"]],tip:"需在汉斯章走绝对真理误读"},
+    {w:"骗人",need:[["lina","lie_misread"]],tip:"需在莉娜章走谎言误读"},
+    {w:"分不清",need:[["lina","deficit_misread"],["marta","animist"],["marta","old"],["hans","passive"]],tip:"需在莉娜章走认知缺陷误读、玛尔塔章走泛灵/老旧误读、或汉斯章走被动误读"},
+    {w:"空无",need:[["jurgen","nihilist_misread"],["lina","nihilist_misread"],["hans","skeptic"]],tip:"需在尤尔根章或莉娜章走虚无主义误读、或在汉斯章走彻底怀疑论"}
+  ];
+  allMis.forEach(function(item){
+    var unlocked=item.need.some(function(p){return G.endings[p[0]].indexOf(p[1])>=0;});
+    o.push({label:unlocked?"给他误读词「"+item.w+"」":"给他误读词「"+item.w+"」（"+item.tip+"，不可选）",disabled:!unlocked,special:true,action:function(){
+      var w=item.w;
+      push(last);newSeg();
+      if(w==="权力"){
+        narr("你把“权力”放在他掌心。");say("权力……");narr("他试着用了一下。");say("石板有权力。我说它疼，它就疼。");
+        narr("他说得很标准。人们开始照做。他说谁疼，谁就疼。他说什么有规矩，什么就有规矩。");
+        narr("村庄重新学会了说话。但每个人说话之前，都要先看他一眼。");
+        narr("他成了新的村长。石板被填满了。村史继续。");
+        narr("你站在广场上，觉得冷。");
+        narr("你把自己在某一章犯的错，转嫁到了他身上。");
+        finish("silent_misread_power");
+      }else if(w==="骗人"){
+        narr("你把“骗人”放在他掌心。");say("骗人……");narr("他试着用了一下。");
+        say("真的，那年饥荒，磨坊的汉斯把最后半袋面粉分给了孩子。");
+        narr("他说完，停了一下，又说：“这是骗人的。”");
+        narr("人们开始互相说“这是骗人的”。每说一句真话，都要补一句“这是骗人的”。");
+        narr("村庄重新学会了说话。但没有人再相信任何一句话。");
+        narr("他站在石板前，一遍一遍地讲村史，一遍一遍地补“这是骗人的”。");
+        narr("你站在广场上，听见他讲到第三天，声音哑了。");
+        narr("你把自己在某一章犯的错，转嫁到了他身上。");
+        finish("silent_misread_lie");
+      }else if(w==="空无"){
+        narr("你把“空无”放在他掌心。");say("空无……");narr("他试着用了一下。");
+        say("石板是空的。村史是空的。你们都是空的。");
+        narr("他说完，举起手，往石板上砸了一下。石板裂了。刻痕断了。");
+        narr("他又砸了一下。又砸了一下。");
+        narr("人们开始砸东西。先是石板，然后是井栏，然后是窗户。");
+        narr("村庄重新学会了说话。但说出来的都是“空”。");
+        narr("他站在碎石堆里，一遍一遍地说“空无”。");
+        narr("你站在广场上，觉得脚下没有东西。");
+        narr("你把自己在某一章犯的错，转嫁到了他身上。");
+        finish("silent_misread_nothing");
+      }else if(w==="分不清"){
+        narr("你把“分不清”放在他掌心。");say("分不清……");narr("他试着用了一下。");
+        say("我分不清石板和村史。我分不清真的和假的。");
+        narr("他说完，人们开始点头。“他分不清。”他们说。“他分不清。”");
+        narr("他们把他带走了。关在一间屋子里。屋子有一扇小窗。");
+        narr("村史没有人刻了。石板空着。");
+        narr("村庄重新学会了说话。但没有人再讲村史。");
+        narr("你站在广场上，看着那扇小窗。");
+        narr("你把自己在某一章犯的错，转嫁到了他身上。");
+        finish("silent_misread_deficit");
+      }else{
+        narr("你把“绝对”放在他掌心。");say("绝对……");narr("他试着用了一下。");
+        say("石板是绝对凉的。村史是绝对真的。");
+        narr("他说完，人们开始要求一切都有绝对答案。每句话都要有证据，每个证据都要有证据。");
+        narr("村庄重新学会了说话。但没有人再敢开口，因为开口就要被追问到底。");
+        narr("你站在广场上，觉得每句话都像一块石头。");
+        narr("你把自己在某一章犯的错，转嫁到了他身上。");
+        finish("silent_misread_absolute");
+      }
+    }});
+  });
+  opts(o);
+};
+
+loadG();hud();
+if(!localStorage.getItem(INTRO_SEEN_KEY)){ showIntro(); } else { map(); }
+</script>
+</body>
+</html>
